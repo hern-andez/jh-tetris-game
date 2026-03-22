@@ -153,7 +153,7 @@ export function GameOver({ setOver }: OverProps) {
           </button>
         </div>
       </div>,
-      root
+      root,
     );
   }
 }

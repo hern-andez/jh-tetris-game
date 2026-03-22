@@ -1,0 +1,95 @@
+/* Inicio de interfaz de inicio */
+
+.home {
+  --primary-color: #31eef5;
+  --second-color: #000f1f;
+  background-color: var(--second-color);
+  width: 100dvw;
+  height: 100dvh;
+  display: grid;
+  place-content: center;
+  position: relative;
+}
+
+.home .home__grid {
+  position: absolute;
+  left: 50%;
+  bottom: 0%;
+  transform: translateX(-50%);
+}
+
+.home .home__container {
+  display: grid;
+  grid-template-areas:
+    "title title title"
+    "icon1 buttons icon2";
+  grid-template-columns: auto 1fr auto;
+  justify-items: center;
+  align-items: end;
+  row-gap: 45px;
+  column-gap: 30px;
+}
+
+.home__container .container__icon {
+  color: var(--primary-color);
+  font-size: clamp(50px, min(14dvw, 14dvh), 70px);
+  filter: drop-shadow(0px 0px 40px var(--primary-color));
+  margin-bottom: 10%;
+}
+
+.home__container .container__icon.icon--bicep {
+  grid-area: icon1;
+}
+
+.home__container .container__icon.icon--game {
+  grid-area: icon2;
+}
+
+.home__container .container__title {
+  grid-area: title;
+  background-image: linear-gradient(var(--primary-color), var(--second-color));
+  background-clip: text;
+  color: transparent;
+  display: inline;
+  font-size: clamp(40px, min(11dvw, 11dvh), 65px);
+  -webkit-text-stroke: 2px #0cf2fa;
+  text-shadow: 0px 0px 150px #00ffff9c;
+}
+
+.home__container .container__btns {
+  --btn-color: #0bc8d9;
+  grid-area: buttons;
+  width: clamp(130px, min(38.5dvw, 38.5dvh), 350px);
+  display: grid;
+  gap: 20px;
+}
+
+.container__btns .btns__item {
+  background-color: transparent;
+  color: #fff;
+  font-size: clamp(15px, min(3.5dvw, 3.5dvh), 30px);
+  font-weight: bold;
+  padding: 7px;
+  border: 1px solid #0bc8d9;
+  border-radius: 15px;
+  outline: 1px solid #088396;
+  outline-offset: 5px;
+  box-shadow: 0px 0px 150px 0px #00ffff46;
+  transition: all 0.2s;
+}
+
+.container__btns .btns__item:hover {
+  background-color: var(--btn-color);
+  color: var(--second-color);
+  box-shadow:
+    0 0 12px #00e5ff44,
+    0 0 24px #00e5ff44;
+  transform: scale(1.07, 1.05);
+}
+
+.container__btns .btns__item.item--actived {
+  background-color: var(--btn-color);
+  color: var(--second-color);
+}
+
+/* Fin de interfaz de inicio */

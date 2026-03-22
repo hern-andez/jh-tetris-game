@@ -3,11 +3,23 @@
   margin: 0;
   box-sizing: border-box;
   user-select: none;
+  font-family: sans-serif;
 }
 
 body {
-  background: linear-gradient(135deg, #143d7ada, #000d, #000000b0);
   height: 100dvh;
+}
+
+button {
+  cursor: pointer;
+}
+
+button * {
+  user-select: none;
+}
+
+svg path {
+  stroke-width: 0.8;
 }
 
 .root {

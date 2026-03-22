@@ -23,7 +23,7 @@ type GameProps = {
 };
 
 // Juego, puntos, controles, modal de Juego pausado y Game Over
-export function Game({ controls, gameState }: GameProps) {
+function Game({ controls, gameState }: GameProps) {
   const [over, setOver] = gameState; // Determina si el juego a acabado
   const container: React.RefObject<HTMLDivElement> = useRef(null);
   const modalPaused: React.RefObject<HTMLDivElement> = useRef(null); // Modal de Juego Pausado
@@ -149,7 +149,7 @@ export function Game({ controls, gameState }: GameProps) {
                 for (let columna = 0; columna < seconds[number][fila].length; columna++) {
                   if (seconds[number][fila][columna] === 1) {
                     const div = document.querySelector(
-                      `.${game.background__cell}[data-x='${secondsCoorX + columna}'][data-y='${secondsCoorY + fila}']`
+                      `.${game.background__cell}[data-x='${secondsCoorX + columna}'][data-y='${secondsCoorY + fila}']`,
                     );
 
                     if (div instanceof HTMLDivElement) div.classList.add(`${game["cell--count"]}`);
@@ -298,7 +298,7 @@ export function Game({ controls, gameState }: GameProps) {
       newFigure.current.style.marginBottom = `${cellNewFigure.length === 1 ? blockSize : 0}px`;
 
       const buttons: NodeListOf<HTMLButtonElement> = document.querySelectorAll(
-        `.${game.controls} .${game.controls__btn}`
+        `.${game.controls} .${game.controls__btn}`,
       ); // Controles
 
       if (statusH4.current && statusButton.current) {
@@ -621,7 +621,7 @@ export function Game({ controls, gameState }: GameProps) {
             // Recorre las filas desde la ultima fila borrada hasta la primera fila del tablero
             for (let y = lastIndexRows - 1; y >= 0; y--) {
               const cells: NodeListOf<HTMLDivElement> = document.querySelectorAll(
-                `.${game.cell__figure}[data-y='${y}']`
+                `.${game.cell__figure}[data-y='${y}']`,
               );
 
               if (cells.length > 0) {
@@ -912,3 +912,5 @@ export function Game({ controls, gameState }: GameProps) {
     </div>
   );
 }
+
+export default Game;

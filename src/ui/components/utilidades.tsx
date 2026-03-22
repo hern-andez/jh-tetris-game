@@ -83,46 +83,6 @@ export const figurasFondo = [
   ],
 ];
 
-// Logo de TETRIS
-export const logo = [
-  [
-    [1, 1, 1],
-    [null, 1, null],
-    [null, 1, null],
-    [null, 1, null],
-    [null, 1, null],
-  ], // T
-  [
-    [1, 1, 1],
-    [1, null, null],
-    [1, 1, 1],
-    [1, null, null],
-    [1, 1, 1],
-  ], // E
-  [
-    [1, 1, 1],
-    [null, 1, null],
-    [null, 1, null],
-    [null, 1, null],
-    [null, 1, null],
-  ], // T
-  [
-    [1, 1, 1],
-    [1, null, 1],
-    [1, 1, 1],
-    [1, null, 1],
-    [1, null, 1],
-  ], // R
-  [[1], [1], [1], [1], [1]], // I
-  [
-    [1, 1, 1],
-    [1, null, null],
-    [1, 1, 1],
-    [null, null, 1],
-    [1, 1, 1],
-  ], // S
-];
-
 // tetris.tsx
 // Conteo para empezar el juego
 export const seconds = [

@@ -1,27 +1,27 @@
 import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
 
-import { root } from "./scripts/utilidades";
-import { Game } from "./scripts/tetris";
-import { GameModal } from "./scripts/startModal";
-import "./styles/tetris.css";
+import { root } from "./ui/components/utilidades";
+import Game from "./ui/components/tetris";
+import Home from "./ui/components/home";
+import "./ui/styles/tetris.css";
 
-export function GameApp() {
-  const [player, setPlayer] = useState<number>(0); // Inicia el juego
+export function App() {
+  const [start, setStart] = useState<boolean>(false); // Inicia el juego
   const [controls, setControls] = useState<boolean>(false); // Activa los controles
-  const [over, setOver] = useState<boolean>(false); // Termina el juego
+  const [ending, setEnding] = useState<boolean>(false); // Termina el juego
 
   return (
     <StrictMode>
-      {player === 0 ? (
-        <GameModal setPlayer={setPlayer} setControls={setControls} /> // Modal de inicio
+      {start ? (
+        <Game controls={controls} gameState={[ending, setEnding]} /> // Componente de juego
       ) : (
-        <Game controls={controls} gameState={[over, setOver]} />
+        <Home setStart={setStart} setControls={setControls} controls={controls} /> // Interfaz de inicio
       )}
     </StrictMode>
   );
 }
 
-if (root instanceof HTMLDivElement) {
-  createRoot(root).render(<GameApp />);
-}
+// Renderiza la aplicación si el root existe
+if (root instanceof HTMLDivElement) createRoot(root).render(<App />);
+else throw new Error("Root element was not found");

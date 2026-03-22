@@ -1,1 +1,1 @@
-{"root":["./src/main.tsx","./src/vite-env.d.ts","./src/scripts/extracomponents.tsx","./src/scripts/startmodal.tsx","./src/scripts/tetris.tsx","./src/scripts/utilidades.tsx"],"version":"5.7.3"}
+{"root":["./src/main.tsx","./src/vite-env.d.ts","./src/ui/components/extracomponents.tsx","./src/ui/components/home.tsx","./src/ui/components/tetris.tsx","./src/ui/components/utilidades.tsx"],"version":"5.7.3"}
