@@ -2,11 +2,14 @@
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  user-select: none;
   font-family: sans-serif;
 }
 
 body {
+  --primary-color: #31eef5;
+  --secondary-color: #000f1f;
+  --third-color: #0287b0;
+  background-color: var(--secondary-color);
   height: 100dvh;
 }
 

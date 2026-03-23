@@ -1,0 +1,49 @@
+.container {
+  grid-area: grid;
+  background-color: color-mix(in srgb, var(--primary-color) 30%, transparent 100%);
+  padding: 2px;
+  display: grid;
+  gap: 1px;
+  position: relative;
+}
+
+.container::before,
+.container::after {
+  content: "";
+  position: absolute;
+  z-index: -10;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 100%;
+  background-image: linear-gradient(transparent 18%, #3ecdf885, transparent 82%);
+  box-shadow: 0px 0px 30px 0px var(--primary-color);
+}
+
+.container::before {
+  left: calc(var(--separate-items) * -1.7);
+}
+
+.container::after {
+  right: calc(var(--separate-items) * -1.7);
+}
+
+.container .container__cell {
+  background-color: var(--secondary-color);
+  aspect-ratio: 1/1;
+  width: clamp(14px, min(3dvw, 3dvh), 30px);
+  position: relative;
+}
+
+.container__cell .cell__ocupied {
+  position: absolute;
+  inset: 0px;
+  background-color: var(--primary-color);
+}
+
+.container__cell .cell__ocupied::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background-color: var(--secondary-color);
+}

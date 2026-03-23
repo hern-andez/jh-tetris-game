@@ -1,330 +1,66 @@
-/* Inicio de cuadricula de fondo, animaciones del tablero  */
-.game__tetris {
-  position: relative;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  justify-items: center;
-  align-items: center;
-  gap: 7px;
+/* Inicio de interfaz de juego */
+
+body {
+  background-image: radial-gradient(#012b54, #000);
 }
 
-.game__tetris .background {
-  padding: 1px;
-  display: grid;
-  grid-template-columns: repeat(13, 1fr);
-  position: relative;
-}
-
-.background .cell__figure {
-  background-size: contain;
-  border: 2px solid black;
+.game {
   position: absolute;
-  top: 1px;
-  left: 1px;
-  transition: all 0.25s;
-  animation: change_color_cell 6s infinite;
-}
-
-.background .background__cell {
-  background-color: #000d;
-  border: 1px solid #48ec;
-  transition: all 0.2s;
-}
-
-.background .cell--count {
-  animation: cell_count 0.5s both;
-}
-
-.background .background-cell-down {
-  animation: cell_flash 0.7s infinite;
-}
-
-.background .background-cell-delete {
-  animation: cell_delete 0.7s both;
-}
-
-@keyframes cell_count {
-  to {
-    background-color: #c8fdff;
-  }
-}
-
-@keyframes change_color_cell {
-  to {
-    filter: hue-rotate(360deg);
-  }
-}
-
-@keyframes cell_flash {
-  0%,
-  50% {
-    background-color: #999;
-  }
-  100% {
-    all: initial;
-  }
-}
-
-@keyframes cell_delete {
-  0% {
-    background-color: white;
-    box-shadow: 0px 0px 20px 0px white;
-  }
-  100% {
-    all: initial;
-  }
-}
-
-/* Fin de cuadricula de fondo, animaciones del tablero */
-/* Inicio de controles de juego */
-
-.controls {
-  align-self: auto;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   display: grid;
-  grid-template-columns: 3fr 1fr 3fr;
-  grid-template-rows: repeat(3, 1fr);
-  gap: 2px;
-}
-
-.controls .controls__btn {
-  background-color: #ddd;
-  color: black;
-  font-size: 26px;
-  padding: 3px;
-  cursor: pointer;
-  transition: all 1s;
-}
-
-.controls .fall {
-  border: 2px solid black;
-}
-
-.controls .rotate {
-  grid-area: span 1 / span 3;
-}
-
-.controls .bottom {
-  grid-area: span 1 / span 3;
-}
-
-.controls .controls__btn:disabled,
-.controls .fall:disabled {
-  background: #aaa;
-  opacity: 0.4;
-  transition: all 1s;
-}
-
-/* Fin de controles de juego */
-/* Inicio de puntos, figura siguiente y botón de pausa */
-
-.game__tetris .status {
-  color: #fffc;
-  width: 120%;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  justify-items: center;
-  align-items: center;
-  position: relative;
-  container-type: inline-size;
-  container-name: position__button;
-}
-
-.status .status__figure {
-  display: grid;
-  align-content: center;
-}
-
-.status .occupied_cell {
-  background-color: red;
-  width: 100%;
-  height: 100%;
-  border: 2px solid black;
-}
-
-.status button {
-  background-image: linear-gradient(45deg, #143d7ada, rgba(119, 2, 33, 0.813));
-  color: #fffc;
-  border: 1px solid #aaa8;
-  border-radius: 100px;
-  cursor: pointer;
-  position: absolute;
-  top: 50%;
-  right: 0px;
-  transform: translate(150%, -50%);
-}
-
-.pausedBackground {
-  background-color: #000b;
-  width: 100vw;
-  height: 100vh;
-  position: absolute;
-  display: none;
   place-content: center;
-  z-index: 10;
-  opacity: 0;
-  animation: show_modal_paused 0.5s both;
 }
 
-.pausedBackground .paused__panel {
-  background-color: #000c;
-  text-align: center;
-  border-radius: 15px;
-  padding: 30px;
-}
-
-.paused__panel h1 {
-  color: #fff;
-  font-size: 2.5em;
-  margin-bottom: 20px;
-  text-shadow: 0 0 10px #ff007f, 0 0 20px #00d1ff;
-}
-
-.paused__panel button:not(.panel_btn_sound) {
-  background: linear-gradient(var(--rotar-background), #ff007f, #00d1ff);
-  color: #fff;
-  font-size: 1em;
-  font-weight: bold;
-  width: 100%;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 25px;
-  margin: 10px 0;
-  cursor: pointer;
-  display: block;
-  transition: all 0.5s;
-}
-
-.paused__panel .panel_btn_sound {
-  background-color: transparent;
-  font-size: 25px;
-  border: none;
-  margin-top: 10px;
-  cursor: pointer;
-  scale: 1.2;
-  transition: all 0.5s;
-}
-
-.paused__panel .green {
-  color: green;
-}
-
-.paused__panel .red {
-  position: relative;
-  color: red;
-}
-
-.paused__panel .red::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(45deg);
-  background-color: red;
-  padding: 1.5px 0px;
-  border-radius: 10px;
-  animation: not_sound_game 0.5s 0.3s both;
-}
-
-.paused__panel button:hover:not(.panel_btn_sound) {
-  scale: 1.05;
-}
-
-@keyframes show_modal_paused {
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes not_sound_game {
-  to {
-    padding-right: 100%;
-  }
-}
-
-@media only screen and (max-width: 500px) {
-  .status button {
-    top: 0%;
-    right: 50%;
-    transform: translate(50%, -125%);
-  }
-}
-
-@media only screen and (max-width: 350px) {
-  .status button {
-    display: none;
-  }
-}
-
-/* Fin de puntos y figura siguiente */
-/* Inicio de modal de gameover */
-
-.modal__score {
-  background-color: #000b;
-  width: 100vw;
-  height: 100vh;
-  position: absolute;
-}
-
-.modal__score .score {
-  background: linear-gradient(135deg, #143d7ada, #000d, #e9a9a958);
-  color: white;
-  text-shadow: 0 0 10px #ff007f, 0 0 30px #00d1ff;
-  text-align: center;
-  width: 300px;
-  min-height: 175px;
-  padding: 20px;
-  border: 0.5px solid #aaa;
-  border-radius: 10px;
+.game .game__container {
+  --separate-items: 15px;
+  margin: 0px 20px;
   display: grid;
-  grid-template-rows: repeat(4, 1fr);
-  gap: 5px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  opacity: 0;
-  transition: all 1s;
-  animation: show_score 0.5s both;
+  grid-template-areas: "points grid next" "btn btn btn";
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: 1fr auto;
+  gap: var(--separate-items);
 }
 
-.score .score_points_container {
+/* Fin de interfaz de juego */
+
+.game__container .child__container {
+  background-color: var(--third-color);
+  height: fit-content;
+  width: clamp(45px, 14dvw, 80px);
+  border: 1px solid var(--third-color);
+  border-radius: 10px;
+  overflow: hidden;
   display: flex;
-  justify-content: center;
+  flex-flow: column;
+  gap: 1px;
+}
+
+.child__container .container__score,
+.child__container .container__next {
+  background-color: var(--secondary-color);
+  color: #eee;
+  padding: 3px 0px;
+  display: grid;
+  justify-items: center;
   align-items: center;
-  gap: 15px;
 }
 
-.score .controls__btn {
-  background: linear-gradient(135deg, #ff007f, #00d1ff);
-  color: #fff;
-  width: 0%;
-  border: none;
-  font-size: 0px;
-  padding: 0px;
-  cursor: pointer;
-  justify-self: center;
-  align-self: center;
-  animation: buttons_game_over 0.5s 2s both;
+.child__container .value {
+  padding: 6px 0px;
 }
 
-.score .controls__btn:last-child {
-  background: linear-gradient(135deg, #00d1ff, #ff007f);
+.container__score .score__title,
+.container__next .next__title {
+  font-size: clamp(9px, 3dvw, 11px);
 }
 
-@keyframes show_score {
-  to {
-    opacity: 1;
-  }
+.container__next.value {
+  justify-content: center;
+  gap: 1px;
 }
 
-@keyframes buttons_game_over {
-  to {
-    font-size: 17px;
-    width: 100%;
-    padding: 4px;
-  }
+.container__next.value .figure__cell {
+  width: 10px;
+  aspect-ratio: 1/1;
+  border: 2px solid var(--third-color);
 }
-
-/* Fin de modal de game over */

@@ -1,9 +1,7 @@
 /* Inicio de interfaz de inicio */
 
 .home {
-  --primary-color: #31eef5;
-  --second-color: #000f1f;
-  background-color: var(--second-color);
+  background-color: var(--secondary-color);
   width: 100dvw;
   height: 100dvh;
   display: grid;
@@ -47,7 +45,7 @@
 
 .home__container .container__title {
   grid-area: title;
-  background-image: linear-gradient(var(--primary-color), var(--second-color));
+  background-image: linear-gradient(var(--primary-color), var(--primary-color));
   background-clip: text;
   color: transparent;
   display: inline;
@@ -80,7 +78,7 @@
 
 .container__btns .btns__item:hover {
   background-color: var(--btn-color);
-  color: var(--second-color);
+  color: var(--secondary-color);
   box-shadow:
     0 0 12px #00e5ff44,
     0 0 24px #00e5ff44;
@@ -89,7 +87,7 @@
 
 .container__btns .btns__item.item--actived {
   background-color: var(--btn-color);
-  color: var(--second-color);
+  color: var(--secondary-color);
 }
 
 /* Fin de interfaz de inicio */

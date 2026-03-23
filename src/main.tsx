@@ -2,9 +2,9 @@ import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import { root } from "./ui/components/utilidades";
-import Game from "./ui/components/tetris";
+import Game from "./ui/components/game";
 import Home from "./ui/components/home";
-import "./ui/styles/tetris.css";
+import "./tetris.css";
 
 export function App() {
   const [start, setStart] = useState<boolean>(false); // Inicia el juego
