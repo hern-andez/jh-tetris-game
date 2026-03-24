@@ -1,7 +1,8 @@
 .container {
+  --separate-padding: 2px;
   grid-area: grid;
   background-color: color-mix(in srgb, var(--primary-color) 30%, transparent 100%);
-  padding: 2px;
+  padding: var(--separate-padding);
   display: grid;
   gap: 1px;
   position: relative;
@@ -28,11 +29,16 @@
   right: calc(var(--separate-items) * -1.7);
 }
 
-.container .container__cell {
+.container .container__cell,
+.container .figure {
   background-color: var(--secondary-color);
   aspect-ratio: 1/1;
-  width: clamp(14px, min(3dvw, 3dvh), 30px);
   position: relative;
+}
+
+.container .figure {
+  position: absolute;
+  margin: var(--separate-padding);
 }
 
 .container__cell .cell__ocupied {
@@ -41,7 +47,8 @@
   background-color: var(--primary-color);
 }
 
-.container__cell .cell__ocupied::before {
+.container__cell .cell__ocupied::before,
+.container .figure::before {
   content: "";
   position: absolute;
   inset: 2px;

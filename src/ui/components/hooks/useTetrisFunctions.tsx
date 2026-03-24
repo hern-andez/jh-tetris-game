@@ -1,37 +1,61 @@
-// function useTetrisFunctions() {
-//   // Dibuja la figura y la guarda en la cuadricula
-//   function crearFigura(): void {
-//     figura.forEach((fila, y) => {
-//       figureCells[y] = []; // En vez de tener 1 o 2 tiene los divs en su orden especifico
+import React from "react";
 
-//       fila.forEach((columna, x) => {
-//         if (columna !== null) {
-//           cuadricula[y + coorY][x + coorX] = columna;
+type UseTetrisProps = {
+  className: CSSModuleClasses;
+  gridContainer: React.MutableRefObject<null | HTMLDivElement>;
+  figureCells: React.MutableRefObject<(null | HTMLDivElement)[][]>; // Indica la nueva posición de cada celda cuando rota la figura
+  figure: React.MutableRefObject<(null | 1 | 2)[][]>;
+  grid: React.MutableRefObject<(null | 1 | 2)[][]>;
+  blockSize: React.MutableRefObject<string>;
+  coorX: React.MutableRefObject<number>;
+  coorY: React.MutableRefObject<number>;
+};
 
-//           // Dibuja la figura y agrega la imagen a celdas especiales
-//           const div = document.createElement("div");
-//           div.classList.add(`${game.cell__figure}`);
-//           div.setAttribute("data-x", `${coorX + x}`);
-//           div.setAttribute("data-y", `${coorY + y}`);
+// Hook que tendrá las funciones principales del juego
+function useTetrisFunctions({
+  className,
+  gridContainer,
+  figureCells,
+  figure,
+  grid,
+  blockSize,
+  coorX,
+  coorY,
+}: UseTetrisProps) {
+  /**
+   * Crea la figura y la renderiza en el DOM
+   */
+  function create(): void {
+    figureCells.current = []; // Vaciar para guardar el estado de la nueva figura
+    console.log(figure.current);
 
-//           div.style.backgroundColor = columna === 1 ? "red" : "#0ff";
-//           if (columna === 2) div.style.backgroundImage = `url('${star.src}')`;
-//           div.style.width = `${blockSize - 0.5}px`;
-//           div.style.height = `${blockSize - 0.5}px`;
-//           div.style.transform = `translate(${(coorX + x) * blockSize}px, ${(coorY + y) * blockSize}px)`;
+    figure.current.forEach((row, y) => {
+      figureCells.current[y] = []; // Crea la fila de la figura
 
-//           figureCells[y].push(div);
-//           if (container.current) container.current.appendChild(div);
-//         } else {
-//           figureCells[y].push(null);
-//         }
-//       });
-//     });
+      row.forEach((col, x) => {
+        if (col === null) figureCells.current[y].push(null);
+        else {
+          grid.current[y + coorY.current][x + coorX.current] = col; // Guarda cada celda de la nueva figura en su espacio correspondiente
 
-//     calcularPuntoMaximo(); // Se muestra el reflejo al crearse la figura
-//   }
+          // Crea la figura en el container y la posiciona visualmente donde debería de ir
+          const div = document.createElement("div");
+          div.classList.add(`${className.figure}`);
 
-//   return;
-// }
+          div.style.backgroundColor = col === 1 ? "red" : "#0ff";
+          div.style.width = blockSize.current;
+          div.style.transform = `translate(calc(${blockSize.current} * ${coorX.current + x} + ${coorX.current + x}px), calc(${blockSize.current} * ${coorY.current + y} + ${coorY.current + y}px))`;
 
-// export default useTetrisFunctions;
+          // Guarda cada div en el mismo estado en el que esta la figura
+          figureCells.current[y].push(div);
+          if (gridContainer.current) gridContainer.current.appendChild(div);
+        }
+      });
+    });
+
+    // calcularPuntoMaximo(); // Se muestra el reflejo al crearse la figura
+  }
+
+  return { create };
+}
+
+export default useTetrisFunctions;

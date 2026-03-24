@@ -1,7 +1,7 @@
 import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
 
-import { root } from "./ui/components/utilidades";
+import { root } from "./ui/components/utils/utils";
 import Game from "./ui/components/game";
 import Home from "./ui/components/home";
 import "./tetris.css";

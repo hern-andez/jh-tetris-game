@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 // import { StatusGame, GameControls, GameOver } from "./extraComponents";
+import useTetrisFunctions from "./hooks/useTetrisFunctions";
 import Points from "./points";
 import Next from "./next";
 import Controls from "./controls";
 import Grid from "./grid";
 import gamecss from "../styles/game.module.css";
+import gridcss from "../styles/grid.module.css";
+import { getFigure } from "./features/features";
 // import { seconds, figuras } from "./utilidades";
 // import {
 //   soundGame,
@@ -28,9 +31,10 @@ type GameProps = {
 
 // Juego, puntos, controles, modal de Juego pausado y Game Over
 function Game({ controls, gameState }: GameProps) {
-  const [points, setPoint] = useState<number>(0);
+  const [points, setPoints] = useState<number>(0);
+  console.log(gameState, setPoints);
   // const [over, setOver] = gameState; // Determina si el juego a acabado
-  // const container: React.RefObject<HTMLDivElement> = useRef(null);
+  const gridContainer: React.RefObject<HTMLDivElement> = useRef(null);
   // const modalPaused: React.RefObject<HTMLDivElement> = useRef(null); // Modal de Juego Pausado
   // const btnSound: React.RefObject<HTMLButtonElement> = useRef(null); // Icono de sonido del modal de Juego Pausado
   // const pointsGame: React.RefObject<HTMLDivElement> = useRef(null); //Sección de puntos en tiempo real
@@ -38,61 +42,68 @@ function Game({ controls, gameState }: GameProps) {
   // const fallEnabled: React.RefObject<HTMLButtonElement> = useRef(null); // Botón de caída rápida del componente controles
   // const statusH4: React.RefObject<HTMLHeadingElement> = useRef(null); // Titulo del status
   // const statusButton: React.RefObject<HTMLButtonElement> = useRef(null); // Botón de pausa
-  // // Medidas dinamicas
-  // const blockCountX = 13; // Cantidad de columnas por fila
-  // const blockCountY = 18; // Cantidad de filas
-  // let medidasContenedor: number; // Medidas dinámicas del contenedor
-  // let blockSize: number; // Medidas para cada celda
-  // // Estado
-  // let isStart: boolean, // Renderiza el juego una sola vez
-  //   gameOver = false, // Finaliza el juego
-  //   gamePaused: boolean, // Indica que el juego esta pausado
-  //   points: number = 0, // Puntos en tiempo real
-  // let figure: (null | 1 | 2)[][]; // Primer figura
-  //   cellNewFigure: (null | 1 | 2)[][], // Figura siguiente
-  //   figurePaused: boolean, // Pausa la aparición de la nueva figura cuando colisiona
-  //   timeStop: number, // Determina el tiempo que va a pasar para que vuelva a aparecer la nueva figura
-  //   coorFigurebellow: number, // La coordenada 'Y' máxima de la figura actual
-  //   itMayFall: boolean, // Indica si la figura puede caer en donde indique coorFigurebellow
-  //   cuadricula: (null | 1 | 2)[][] = Array.from({ length: blockCountY }, () => Array(blockCountX).fill(null));
-  // let coorX: number, coorY: number, coorXPrevious: number; // Coordenadas y copia de 'X' para ejecutar el reflejo
-  // let updateTime: number, moreSpeed: number; // Hace caer en 'Y' la figura cuando updateTime >= moreSpeed
-  // let countMoreSpeed: Date, // Tiempo que aumenta la velocidad de caída automática de la figura
-  //   intervalTime: undefined | number, // Temporizador que actualiza countMoreSpeed
-  //   countStopMove: Date, // Tiempo que debe pasar para ejecutar la funcione mover
-  //   moveTimeStop: undefined | number, // Temporizador que actualiza countStopMove
-  //   sumTimeStop: number = 160; // Milisegundo para ejecutar moveTimeStop
-  // let soundsEnabled: boolean; // Habilita o deshabilita los sonidos
-  // let figureCells: (null | HTMLDivElement)[][] = []; // Indica la nueva posición de cada celda cuando rota la figura
-  const figure = [
-    [null, null, null],
-    [null, null, null],
-  ];
+  // Medidas dinamicas
+  const blockCountX = useRef(11); // Cantidad de columnas por fila
+  const blockCountY = useRef(18); // Cantidad de filas
+  // const medidasContenedo = useRef<number>(0); // Medidas dinámicas del contenedor
+  const blockSize = useRef<string>(
+    `clamp(${controls ? "14px, min(3dvw, 3dvh), 30px" : "16px, min(3.1dvw, 3.1dvh), 32px"})`,
+  ); // Medidas para cada celda
+  // Estado
+  const render = useRef<boolean>(false); // Renderiza el juego una sola vez
+  // const gameOver = useRef(false); // Finaliza el juego
+  // const gamePaused = useRef<boolean>(false); // Indica que el juego esta pausado
+  // points: number = 0, // Puntos en tiempo real
+  const figure = useRef<(null | 1 | 2)[][]>(getFigure()); // Primer figura
+  const nextFigure = useRef<(null | 1 | 2)[][]>(getFigure()); // Figura siguiente
+  // const figurePaused = useRef<boolean>(false); // Pausa la aparición de la nueva figura cuando colisiona
+  // const timeStop = useRef<number>(0); // Determina el tiempo que va a pasar para que vuelva a aparecer la nueva figura
+  // const coorFigurebellow = useRef<number>(0); // La coordenada 'Y' máxima de la figura actual
+  // const itMayFall = useRef<boolean>(false); // Indica si la figura puede caer en donde indique coorFigurebellow
+  const grid = useRef<(null | 1 | 2)[][]>(
+    Array.from({ length: blockCountY.current }, () => Array(blockCountX.current).fill(null)),
+  );
+  const coorX = useRef<number>(Math.floor((blockCountX.current - figure.current[0].length) / 2));
+  const coorY = useRef<number>(0);
+  // const coorXPrevious = useRef<number>(0); // Coordenadas y copia de 'X' para ejecutar el reflejo
+  // const updateTime = useRef<number>(0);
+  // const moreSpeed = useRef<number>(0); // Hace caer en 'Y' la figura cuando updateTime >= moreSpeed
+  // const countMoreSpeed = useRef<Date>(new Date()); // Tiempo que aumenta la velocidad de caída automática de la figura
+  // const intervalTime = useRef<undefined | number>(undefined); // Temporizador que actualiza countMoreSpeed
+  // const countStopMove = useRef<Date>(new Date()); // Tiempo que debe pasar para ejecutar la funcione mover
+  // const moveTimeStop = useRef<undefined | number>(undefined); // Temporizador que actualiza countStopMove
+  // const sumTimeStop = useRef(160); // Milisegundo para ejecutar moveTimeStop
+  // const soundsEnabled = useRef<boolean>(false); // Habilita o deshabilita los sonidos
+  const figureCells = useRef<(null | HTMLDivElement)[][]>([]);
 
-  // // Es pacifica el tamaño de cada celda dinámicamente
-  // if (controls) {
-  //   medidasContenedor = Math.round(innerHeight / 2.2);
-  //   blockSize = Math.round(medidasContenedor / blockCountY + 3);
-  // } else {
-  //   medidasContenedor = Math.round(innerHeight / 1.9);
-  //   blockSize = Math.round(medidasContenedor / blockCountY + 3);
-  // }
+  const { create } = useTetrisFunctions({
+    figureCells,
+    gridContainer,
+    className: gridcss,
+    figure,
+    grid,
+    coorX,
+    coorY,
+    blockSize,
+  });
 
-  // useEffect(() => {
-  //   if (newFigure.current) {
-  //     newFigure.current.style.height = `${2 * blockSize}px`;
-  //     startGame();
-  //   }
-  // });
+  useEffect(() => {
+    if (!render.current) {
+      render.current = true;
+      // newFigure.current.style.height = `${2 * blockSize}px`;
+      // startGame();
+      create();
+    }
+  });
 
   // // Comienza el juego, agregando en eventos, estado inicial, comienza los temporizadores y dibuja la primer figura
   // function startGame() {
   //   if (!over && !isStart) {
   //     isStart = true; // Evita doble renderización
 
-  //     const btnPaused = document.querySelector(`.${game.status} button`); // Deshabilita el control de pausa
+  //     const btnPaused = document.querySelector(`.${gamecss.status} button`); // Deshabilita el control de pausa
   //     if (btnPaused instanceof HTMLButtonElement) btnPaused.disabled = true;
-  //     document.querySelectorAll(`.${game.cell__figure}`).forEach((cell) => cell.remove()); // Remueve las celdas del juego anterior
+  //     document.querySelectorAll(`.${gamecss.cell__figure}`).forEach((cell) => cell.remove()); // Remueve las celdas del juego anterior
 
   //     // Estado inicial del juego
   //     cuadricula = Array.from({ length: blockCountY }, () => Array(blockCountX).fill(null));
@@ -100,8 +111,6 @@ function Game({ controls, gameState }: GameProps) {
   //     gamePaused = false;
   //     figurePaused = false;
   //     figura = obtenerFigura();
-  //     coorX = Math.floor((blockCountX - figura[0].length) / 2);
-  //     coorY = 0;
   //     coorXPrevious = coorX;
   //     coorFigurebellow = 0;
   //     itMayFall = true;
@@ -120,7 +129,7 @@ function Game({ controls, gameState }: GameProps) {
   //       soundsEnabled = localStorage.getItem("sounds-enabled") === "true" ? true : false; // Se obtiene el estado establecido
   //     }
 
-  //     if (soundsEnabled) soundGame.currentTime = 0;
+  //     if (soundsEnabled) soundgamecss.currentTime = 0;
 
   //     // Muestra segundos para empezar el juego
   //     setTimeout(() => {
@@ -147,7 +156,7 @@ function Game({ controls, gameState }: GameProps) {
   //           if (btnPaused instanceof HTMLButtonElement) btnPaused.disabled = false;
   //           if (soundsEnabled === true) {
   //             soundStart.play();
-  //             setTimeout(() => soundGame.play(), 1000);
+  //             setTimeout(() => soundgamecss.play(), 1000);
   //           }
   //         } else {
   //           setTimeout(() => {
@@ -158,7 +167,7 @@ function Game({ controls, gameState }: GameProps) {
   //               for (let columna = 0; columna < seconds[number][fila].length; columna++) {
   //                 if (seconds[number][fila][columna] === 1) {
   //                   const div = document.querySelector(
-  //                     `.${game.background__cell}[data-x='${secondsCoorX + columna}'][data-y='${secondsCoorY + fila}']`,
+  //                     `.${gamecss.background__cell}[data-x='${secondsCoorX + columna}'][data-y='${secondsCoorY + fila}']`,
   //                   );
 
   //                   if (div instanceof HTMLDivElement) div.classList.add(`${game["cell--count"]}`);
@@ -192,7 +201,7 @@ function Game({ controls, gameState }: GameProps) {
 
   //       // Suena sonido de game over
   //       if (soundsEnabled === true) {
-  //         soundGame.pause();
+  //         soundgamecss.pause();
   //         soundNoMoreFigure.currentTime = 0.6;
   //         soundNoMoreFigure.play();
   //       }
@@ -220,13 +229,13 @@ function Game({ controls, gameState }: GameProps) {
   //             }
 
   //             points = 0;
-  //             if (pointsGame.current) pointsGame.current.textContent = `${points}`;
+  //             if (pointsgamecss.current) pointsgamecss.current.textContent = `${points}`;
   //           }, 1000);
   //         } else {
   //           // Opaca las celdas existentes
   //           for (let columna = 0; columna < cuadricula[fila].length; columna++) {
   //             if (cuadricula[fila][columna]) {
-  //               const cell = document.querySelector(`.${game.cell__figure}[data-x='${columna}'][data-y='${fila}']`);
+  //               const cell = document.querySelector(`.${gamecss.cell__figure}[data-x='${columna}'][data-y='${fila}']`);
 
   //               if (cell instanceof HTMLDivElement) {
   //                 cell.style.opacity = `0.5`;
@@ -290,7 +299,7 @@ function Game({ controls, gameState }: GameProps) {
   //       fila.forEach((columna, x) => {
   //         if (columna !== null) {
   //           // Modifica el tamaño y posicion de cada celda en el tablero
-  //           const cell = document.querySelector(`.${game.cell__figure}[data-x='${x}'][data-y='${y}']`);
+  //           const cell = document.querySelector(`.${gamecss.cell__figure}[data-x='${x}'][data-y='${y}']`);
 
   //           if (cell instanceof HTMLDivElement) {
   //             cell.style.width = `${blockSize - 0.5}px`;
@@ -307,7 +316,7 @@ function Game({ controls, gameState }: GameProps) {
   //     newFigure.current.style.marginBottom = `${cellNewFigure.length === 1 ? blockSize : 0}px`;
 
   //     const buttons: NodeListOf<HTMLButtonElement> = document.querySelectorAll(
-  //       `.${game.controls} .${game.controls__btn}`,
+  //       `.${gamecss.controls} .${gamecss.controls__btn}`,
   //     ); // Controles
 
   //     if (statusH4.current && statusButton.current) {
@@ -322,11 +331,6 @@ function Game({ controls, gameState }: GameProps) {
   // // Remueve clases de una lista de elementos como las del reflejo o cuando se elimina un fila completa
   // function removeClass(clases: string): void {
   //   document.querySelectorAll(`.${clases}`).forEach((element) => element.classList.remove(clases));
-  // }
-
-  // // Devuelve una figura aleatoria
-  // function obtenerFigura(): (null | 1 | 2)[][] {
-  //   return pointsFigure(figuras[Math.floor(Math.random() * figuras.length)]);
   // }
 
   // // Devuelve la figura con celdas especiales que dan mas puntos
@@ -348,38 +352,6 @@ function Game({ controls, gameState }: GameProps) {
   //   });
 
   //   return figure;
-  // }
-
-  // // Dibuja la figura y la guarda en la cuadricula
-  // function crearFigura(): void {
-  //   figura.forEach((fila, y) => {
-  //     figureCells[y] = []; // En vez de tener 1 o 2 tiene los divs en su orden especifico
-
-  //     fila.forEach((columna, x) => {
-  //       if (columna !== null) {
-  //         cuadricula[y + coorY][x + coorX] = columna;
-
-  //         // Dibuja la figura y agrega la imagen a celdas especiales
-  //         const div = document.createElement("div");
-  //         div.classList.add(`${game.cell__figure}`);
-  //         div.setAttribute("data-x", `${coorX + x}`);
-  //         div.setAttribute("data-y", `${coorY + y}`);
-
-  //         div.style.backgroundColor = columna === 1 ? "red" : "#0ff";
-  //         if (columna === 2) div.style.backgroundImage = `url('${star.src}')`;
-  //         div.style.width = `${blockSize - 0.5}px`;
-  //         div.style.height = `${blockSize - 0.5}px`;
-  //         div.style.transform = `translate(${(coorX + x) * blockSize}px, ${(coorY + y) * blockSize}px)`;
-
-  //         figureCells[y].push(div);
-  //         if (container.current) container.current.appendChild(div);
-  //       } else {
-  //         figureCells[y].push(null);
-  //       }
-  //     });
-  //   });
-
-  //   calcularPuntoMaximo(); // Se muestra el reflejo al crearse la figura
   // }
 
   // // Actualiza su nueva posición
@@ -474,7 +446,7 @@ function Game({ controls, gameState }: GameProps) {
   //           if (columna) {
   //             const dataX = x + coorX;
   //             const dataY = y + coorReflejoY;
-  //             const div = document.querySelector(`.${game.background__cell}[data-x='${dataX}'][data-y='${dataY}']`);
+  //             const div = document.querySelector(`.${gamecss.background__cell}[data-x='${dataX}'][data-y='${dataY}']`);
 
   //             setTimeout(() => {
   //               if (div instanceof HTMLDivElement) div.classList.add(`${game["background-cell-down"]}`);
@@ -606,12 +578,12 @@ function Game({ controls, gameState }: GameProps) {
   //       }
 
   //       // Anima todas las columnas de la fila del tablero
-  //       document.querySelectorAll(`.${game.background__cell}[data-y='${row}']`).forEach((cell) => {
+  //       document.querySelectorAll(`.${gamecss.background__cell}[data-y='${row}']`).forEach((cell) => {
   //         setTimeout(() => cell.classList.add(`${game["background-cell-delete"]}`), 0.0001);
   //       });
 
   //       // Remueve todas las columnas
-  //       document.querySelectorAll(`.${game.cell__figure}[data-y='${row}']`).forEach((cell) => cell.remove());
+  //       document.querySelectorAll(`.${gamecss.cell__figure}[data-y='${row}']`).forEach((cell) => cell.remove());
 
   //       // Dibuja las celdas ocupadas en su nueva posición
   //       if (filasBorradas === 1) {
@@ -621,7 +593,7 @@ function Game({ controls, gameState }: GameProps) {
   //           // Recorre las filas desde la ultima fila borrada hasta la primera fila del tablero
   //           for (let y = lastIndexRows - 1; y >= 0; y--) {
   //             const cells: NodeListOf<HTMLDivElement> = document.querySelectorAll(
-  //               `.${game.cell__figure}[data-y='${y}']`,
+  //               `.${gamecss.cell__figure}[data-y='${y}']`,
   //             );
 
   //             if (cells.length > 0) {
@@ -653,8 +625,8 @@ function Game({ controls, gameState }: GameProps) {
   //       const sumador = setInterval(() => {
   //         if (sumPoints > points) clearInterval(sumador);
   //         else {
-  //           if (pointsGame.current) {
-  //             pointsGame.current.textContent = `${sumPoints}`;
+  //           if (pointsgamecss.current) {
+  //             pointsgamecss.current.textContent = `${sumPoints}`;
   //             sumPoints++;
   //           }
   //         }
@@ -728,7 +700,7 @@ function Game({ controls, gameState }: GameProps) {
 
   //     for (let fila = coorY; fila < coorFigurebellow + figura.length; fila++) {
   //       for (let columna = coorX; columna < coorX + figura[0].length; columna++) {
-  //         const cell = document.querySelector(`.${game.background__cell}[data-x='${columna}'][data-y='${fila}']`);
+  //         const cell = document.querySelector(`.${gamecss.background__cell}[data-x='${columna}'][data-y='${fila}']`);
   //         if (cell instanceof HTMLDivElement) cell.style.backgroundColor = `rgba(0, 0, 255, ${opacidad})`;
   //       }
 
@@ -743,7 +715,7 @@ function Game({ controls, gameState }: GameProps) {
   //       // Establece la figura como fija y restablece la animacion
   //       mover("y", 1);
 
-  //       const cells: NodeListOf<HTMLDivElement> = document.querySelectorAll(`.${game.background__cell}[style]`);
+  //       const cells: NodeListOf<HTMLDivElement> = document.querySelectorAll(`.${gamecss.background__cell}[style]`);
   //       cells.forEach((cell) => (cell.style.backgroundColor = "#000d"));
   //     }, 250);
   //   }
@@ -767,7 +739,7 @@ function Game({ controls, gameState }: GameProps) {
   //     for (let x = 0; x < cellNewFigure[y].length; x++) {
   //       const div = document.createElement("div");
 
-  //       div.classList.add(cellNewFigure[y][x] ? `${game.occupied_cell}` : `${game.empty_cell}`);
+  //       div.classList.add(cellNewFigure[y][x] ? `${gamecss.occupied_cell}` : `${gamecss.empty_cell}`);
   //       if (cellNewFigure[y][x] === 2) div.style.animation = "cell_flash .7s infinite";
 
   //       if (newFigure.current) newFigure.current.appendChild(div);
@@ -792,7 +764,7 @@ function Game({ controls, gameState }: GameProps) {
   // // Habilita o deshabilita los botones y eventos del juego
   // function enabledBtns(event: "addEventListener" | "removeEventListener", valueBtns: boolean): void {
   //   document[event]("keydown", handleKeyDown as unknown as EventListener);
-  //   document.querySelectorAll(`.${game.controls} button`).forEach((btn) => {
+  //   document.querySelectorAll(`.${gamecss.controls} button`).forEach((btn) => {
   //     if (btn instanceof HTMLButtonElement) btn.disabled = valueBtns;
   //   });
   // }
@@ -803,14 +775,14 @@ function Game({ controls, gameState }: GameProps) {
   //   localStorage.setItem("sounds-enabled", `${soundsEnabled}`);
 
   //   if (btnSound.current) {
-  //     btnSound.current.classList.remove(soundsEnabled === true ? `${game.red}` : `${game.green}`);
-  //     btnSound.current.classList.add(soundsEnabled === true ? `${game.green}` : `${game.red}`);
+  //     btnSound.current.classList.remove(soundsEnabled === true ? `${gamecss.red}` : `${gamecss.green}`);
+  //     btnSound.current.classList.add(soundsEnabled === true ? `${gamecss.green}` : `${gamecss.red}`);
   //   }
 
   //   if (soundsEnabled === true) {
-  //     soundGame.currentTime = 0;
-  //     soundGame.play();
-  //   } else soundGame.pause();
+  //     soundgamecss.currentTime = 0;
+  //     soundgamecss.play();
+  //   } else soundgamecss.pause();
   // }
 
   // // Muestra el modal remueve eventos y detiene temporizadores
@@ -824,7 +796,7 @@ function Game({ controls, gameState }: GameProps) {
 
   //     if (modalPaused.current && btnSound.current) {
   //       modalPaused.current.style.display = "grid";
-  //       btnSound.current.classList.add(soundsEnabled === true ? `${game.green}` : `${game.red}`); // Si el icono esta habilitado o no
+  //       btnSound.current.classList.add(soundsEnabled === true ? `${gamecss.green}` : `${gamecss.red}`); // Si el icono esta habilitado o no
   //     }
 
   //     clearInterval(intervalTime);
@@ -841,9 +813,9 @@ function Game({ controls, gameState }: GameProps) {
   // }
 
   // return (
-  //   <div className={game.game__tetris}>
-  //     <div className={game.pausedBackground} ref={modalPaused}>
-  //       <div className={game.paused__panel}>
+  //   <div className={gamecss.game__tetris}>
+  //     <div className={gamecss.pausedBackground} ref={modalPaused}>
+  //       <div className={gamecss.paused__panel}>
   //         <h1>Game Paused</h1>
   //         <button
   //           onClick={() => {
@@ -865,7 +837,7 @@ function Game({ controls, gameState }: GameProps) {
   //           Reset
   //         </button>
   //         <button
-  //           className={`material-symbols-outlined ${game.panel_btn_sound}`}
+  //           className={`material-symbols-outlined ${gamecss.panel_btn_sound}`}
   //           onClick={() => {
   //             setSoundsGame();
   //           }}
@@ -889,7 +861,7 @@ function Game({ controls, gameState }: GameProps) {
   //     />{" "}
   //     {/* Estado del juego */}
   //     <div
-  //       className={game.background}
+  //       className={gamecss.background}
   //       style={{ width: `${blockSize * blockCountX + 2}px`, height: `${blockSize * blockCountY + 2}px` }}
   //       ref={container}
   //     >
@@ -898,7 +870,7 @@ function Game({ controls, gameState }: GameProps) {
   //           return (
   //             <div
   //               key={`${filaIndex}-${columnaIndex}`}
-  //               className={game.background__cell}
+  //               className={gamecss.background__cell}
   //               data-x={columnaIndex}
   //               data-y={filaIndex}
   //             ></div>
@@ -916,9 +888,9 @@ function Game({ controls, gameState }: GameProps) {
     <div className={gamecss.game}>
       <div className={gamecss.game__container}>
         <Points points={points} />
-        <Grid />
-        <Next figure={figure} />
-        <Controls />
+        <Grid gridContainer={gridContainer} grid={grid} blockCountX={blockCountX} blockSize={blockSize} />
+        <Next nextFigure={nextFigure} />
+        {controls ? <Controls /> : null}
       </div>
     </div>
   );

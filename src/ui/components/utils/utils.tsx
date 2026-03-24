@@ -119,7 +119,7 @@ export const seconds = [
 ];
 
 // Figuras en juego
-export const figuras: (null | 1)[][][] = [
+export const gameFigures: (null | 1)[][][] = [
   [[1, 1, 1, 1]], // I
   [
     [1, 1],
