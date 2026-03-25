@@ -29,28 +29,44 @@
   right: calc(var(--separate-items) * -1.7);
 }
 
-.container .container__cell,
-.container .figure {
+.container .container__row {
+  display: grid;
+  gap: 1px;
+}
+
+.container__row .row__col,
+.container .figure__created {
   background-color: var(--secondary-color);
   aspect-ratio: 1/1;
   position: relative;
 }
 
-.container .figure {
+.container__row .row__col.figure--reflex {
+  animation: sliding_reflection 0.7s linear infinite;
+}
+
+.container .figure__created {
+  background-color: red;
   position: absolute;
   margin: var(--separate-padding);
 }
 
-.container__cell .cell__ocupied {
+.row__col .cell__ocupied {
   position: absolute;
   inset: 0px;
   background-color: var(--primary-color);
 }
 
-.container__cell .cell__ocupied::before,
-.container .figure::before {
+.row__col .cell__ocupied::before,
+.container .figure__created::before {
   content: "";
   position: absolute;
   inset: 2px;
   background-color: var(--secondary-color);
+}
+
+@keyframes sliding_reflection {
+  50% {
+    background-color: #ddd;
+  }
 }

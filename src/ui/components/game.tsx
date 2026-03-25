@@ -47,7 +47,7 @@ function Game({ controls, gameState }: GameProps) {
   const blockCountY = useRef(18); // Cantidad de filas
   // const medidasContenedo = useRef<number>(0); // Medidas dinámicas del contenedor
   const blockSize = useRef<string>(
-    `clamp(${controls ? "14px, min(3dvw, 3dvh), 30px" : "16px, min(3.1dvw, 3.1dvh), 32px"})`,
+    `clamp(${controls ? "12px, min(3dvw, 3dvh), 30px" : "14px, min(3.1dvw, 3.1dvh), 32px"})`,
   ); // Medidas para cada celda
   // Estado
   const render = useRef<boolean>(false); // Renderiza el juego una sola vez
@@ -58,14 +58,14 @@ function Game({ controls, gameState }: GameProps) {
   const nextFigure = useRef<(null | 1 | 2)[][]>(getFigure()); // Figura siguiente
   // const figurePaused = useRef<boolean>(false); // Pausa la aparición de la nueva figura cuando colisiona
   // const timeStop = useRef<number>(0); // Determina el tiempo que va a pasar para que vuelva a aparecer la nueva figura
-  // const coorFigurebellow = useRef<number>(0); // La coordenada 'Y' máxima de la figura actual
-  // const itMayFall = useRef<boolean>(false); // Indica si la figura puede caer en donde indique coorFigurebellow
+  const reflectionCoor = useRef<number>(0); // La coordenada 'Y' máxima de la figura actual
+  const couldItFall = useRef<boolean>(false); // Indica si la figura puede caer en donde indique reflectionCoor
   const grid = useRef<(null | 1 | 2)[][]>(
     Array.from({ length: blockCountY.current }, () => Array(blockCountX.current).fill(null)),
   );
   const coorX = useRef<number>(Math.floor((blockCountX.current - figure.current[0].length) / 2));
   const coorY = useRef<number>(0);
-  // const coorXPrevious = useRef<number>(0); // Coordenadas y copia de 'X' para ejecutar el reflejo
+  const coorXPrevious = useRef<number>(0); // Coordenadas y copia de 'X' para ejecutar el reflejo
   // const updateTime = useRef<number>(0);
   // const moreSpeed = useRef<number>(0); // Hace caer en 'Y' la figura cuando updateTime >= moreSpeed
   // const countMoreSpeed = useRef<Date>(new Date()); // Tiempo que aumenta la velocidad de caída automática de la figura
@@ -85,6 +85,9 @@ function Game({ controls, gameState }: GameProps) {
     coorX,
     coorY,
     blockSize,
+    reflectionCoor,
+    coorXPrevious,
+    couldItFall,
   });
 
   useEffect(() => {
@@ -274,65 +277,6 @@ function Game({ controls, gameState }: GameProps) {
   //   requestAnimationFrame(updateGame);
   // }
 
-  // // Hace responsivo el juego
-  // function handleResizeChange() {
-  //   let newBlockSize: number; // Nuevas medidas del bloque
-
-  //   if (controls) {
-  //     // Ocupa menos si los controles están habilitados
-  //     medidasContenedor = Math.round(innerHeight / 2.2);
-  //     newBlockSize = Math.round(medidasContenedor / blockCountY + 3);
-  //   } else {
-  //     // Ocupa mas si los controles están habilitados
-  //     medidasContenedor = Math.round(innerHeight / 1.9);
-  //     newBlockSize = Math.round(medidasContenedor / blockCountY + 3);
-  //   }
-
-  //   // Hace responsivo si la nueva medida es diferente a la medida actual
-  //   if (newBlockSize !== blockSize && container.current && newFigure.current && !figurePaused && cellNewFigure) {
-  //     blockSize = newBlockSize;
-
-  //     container.current.style.width = `${blockSize * blockCountX + 2}px`;
-  //     container.current.style.height = `${blockSize * blockCountY + 2}px`;
-
-  //     cuadricula.forEach((fila, y) => {
-  //       fila.forEach((columna, x) => {
-  //         if (columna !== null) {
-  //           // Modifica el tamaño y posicion de cada celda en el tablero
-  //           const cell = document.querySelector(`.${gamecss.cell__figure}[data-x='${x}'][data-y='${y}']`);
-
-  //           if (cell instanceof HTMLDivElement) {
-  //             cell.style.width = `${blockSize - 0.5}px`;
-  //             cell.style.height = `${blockSize - 0.5}px`;
-  //             cell.style.transform = `translate(${x * blockSize}px, ${y * blockSize}px)`;
-  //           }
-  //         }
-  //       });
-  //     });
-
-  //     // Contenedor de la siguiente figura
-  //     newFigure.current.style.width = `${cellNewFigure[0].length * blockSize}px`;
-  //     newFigure.current.style.height = `${cellNewFigure.length * blockSize}px`;
-  //     newFigure.current.style.marginBottom = `${cellNewFigure.length === 1 ? blockSize : 0}px`;
-
-  //     const buttons: NodeListOf<HTMLButtonElement> = document.querySelectorAll(
-  //       `.${gamecss.controls} .${gamecss.controls__btn}`,
-  //     ); // Controles
-
-  //     if (statusH4.current && statusButton.current) {
-  //       statusH4.current.style.fontSize = `${blockSize * 1.3}px`;
-  //       statusButton.current.style.fontSize = `${blockSize * 1.2}px`;
-  //       statusButton.current.style.padding = `${blockSize / 2.5}px`;
-  //       buttons.forEach((button) => (button.style.fontSize = `${blockSize / 2 + blockSize}px`));
-  //     }
-  //   }
-  // }
-
-  // // Remueve clases de una lista de elementos como las del reflejo o cuando se elimina un fila completa
-  // function removeClass(clases: string): void {
-  //   document.querySelectorAll(`.${clases}`).forEach((element) => element.classList.remove(clases));
-  // }
-
   // // Devuelve la figura con celdas especiales que dan mas puntos
   // function pointsFigure(figure: (null | 1 | 2)[][]): (null | 1 | 2)[][] {
   //   let pointsDoubleMax = 2; // Máximo 2 celdas especiales por figura
@@ -354,34 +298,7 @@ function Game({ controls, gameState }: GameProps) {
   //   return figure;
   // }
 
-  // // Actualiza su nueva posición
-  // function actualizarFigura(): void {
-  //   figura.forEach((fila, y) => {
-  //     fila.forEach((columna, x) => {
-  //       if (columna !== null) {
-  //         const cell = figureCells[y][x];
-
-  //         if (cell) {
-  //           cell.style.transform = `translate(${(coorX + x) * blockSize}px, ${(coorY + y) * blockSize}px)`;
-  //           cuadricula[coorY + y][coorX + x] = columna;
-
-  //           cell.setAttribute("data-x", `${coorX + x}`);
-  //           cell.setAttribute("data-y", `${coorY + y}`);
-  //         }
-  //       }
-  //     });
-  //   });
-
-  //   if (
-  //     coorY + figura.length - 1 === cuadricula.length - figura.length ||
-  //     coorY + figura.length - 1 === coorFigurebellow
-  //   ) {
-  //     // Remueve la clase y deshabilita el botón de caída rápida cuando la figura llega a su punto máximo
-  //     removeClass(`${game["background-cell-down"]}`);
-  //     itMayFall = false;
-  //   }
-  //   if (coorXPrevious !== coorX) calcularPuntoMaximo(); // Agrega el reflejo cuando cambia coorX
-  // }
+  // Function actualizar
 
   // // Elimina la figura de la matriz
   // function eliminarFigura(): void {
@@ -390,72 +307,6 @@ function Game({ controls, gameState }: GameProps) {
   //       if (columna !== null) cuadricula[y + coorY][x + coorX] = null;
   //     });
   //   });
-  // }
-
-  // // Muestra un reflejo de la figura actual en su coordenada 'Y' máxima que puede llegar
-  // function calcularPuntoMaximo(): void {
-  //   removeClass(`${game["background-cell-down"]}`); // Borra el reflejo anterior
-
-  //   // Obtiene los índices de las celdas ocupadas de la figura
-  //   if (coorY + figura.length - 1 < cuadricula.length - figura.length) {
-  //     const cCF: number[][] = []; // Son las coordenadas de las celdas ocupadas mas bajas de la figura
-  //     let coorReflejoY = 0;
-
-  //     figura.forEach((fila, y) => {
-  //       fila.forEach((columna, x) => {
-  //         if (columna && figura[y + 1]) {
-  //           if (figura[y + 1][x] === null) {
-  //             cCF.push([x, y]);
-  //           }
-  //         } else if (columna) {
-  //           cCF.push([x, y]);
-  //         }
-  //       });
-  //     });
-
-  //     // obtiene la coordenada máxima en 'Y'
-  //     for (let fila = coorY + figura.length; fila < cuadricula.length; fila++) {
-  //       if (coorReflejoY) break;
-
-  //       for (let coorFigure = 0; coorFigure < cCF.length; coorFigure++) {
-  //         if (
-  //           fila === cuadricula.length - figura.length &&
-  //           coorFigure === cCF.length - 1 &&
-  //           cuadricula[cCF[coorFigure][1] + fila][cCF[coorFigure][0] + coorX] === null
-  //         ) {
-  //           // Cuando llega a la ultima fila de la cuadricula
-  //           coorReflejoY = cuadricula.length - figura.length;
-  //           break;
-  //         } else if (cuadricula[cCF[coorFigure][1] + fila]) {
-  //           if (cuadricula[cCF[coorFigure][1] + fila][cCF[coorFigure][0] + coorX] !== null) {
-  //             // Cuando encuentra la primera celda ocupada
-  //             coorReflejoY = fila - 1;
-  //             break;
-  //           }
-  //         }
-  //       }
-  //     }
-
-  //     if (coorY + figura.length - 1 < coorReflejoY) {
-  //       // Dibuja el reflejo de la figura y guarda la coordenada máxima para la función puntoMáximo
-  //       coorFigurebellow = coorReflejoY;
-  //       itMayFall = true;
-
-  //       figura.forEach((fila, y) => {
-  //         fila.forEach((columna, x) => {
-  //           if (columna) {
-  //             const dataX = x + coorX;
-  //             const dataY = y + coorReflejoY;
-  //             const div = document.querySelector(`.${gamecss.background__cell}[data-x='${dataX}'][data-y='${dataY}']`);
-
-  //             setTimeout(() => {
-  //               if (div instanceof HTMLDivElement) div.classList.add(`${game["background-cell-down"]}`);
-  //             }, 0.0001);
-  //           }
-  //         });
-  //       });
-  //     } else itMayFall = false; // Deshabilita el botón de caída rápida si la figura esta en su punto máximo
-  //   }
   // }
 
   // // Finaliza el juego si una celda de la nueva figura ya esta ocupada en el tablero
@@ -888,7 +739,13 @@ function Game({ controls, gameState }: GameProps) {
     <div className={gamecss.game}>
       <div className={gamecss.game__container}>
         <Points points={points} />
-        <Grid gridContainer={gridContainer} grid={grid} blockCountX={blockCountX} blockSize={blockSize} />
+        <Grid
+          gridContainer={gridContainer}
+          grid={grid}
+          blockCountX={blockCountX}
+          blockCountY={blockCountY}
+          blockSize={blockSize}
+        />
         <Next nextFigure={nextFigure} />
         {controls ? <Controls /> : null}
       </div>
