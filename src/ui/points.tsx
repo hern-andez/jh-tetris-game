@@ -1,4 +1,4 @@
-import gamecss from "../styles/game.module.css";
+import gamecss from "./styles/game.module.css";
 
 type PointsProps = { points: number };
 

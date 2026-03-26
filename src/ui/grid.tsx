@@ -1,15 +1,14 @@
 import React from "react";
-import gridcss from "../styles/grid.module.css";
+import gridcss from "./styles/grid.module.css";
 
 type GridProps = {
   gridContainer: React.MutableRefObject<HTMLDivElement | null>;
   grid: React.MutableRefObject<(1 | 2 | null)[][]>;
   blockCountX: React.MutableRefObject<number>;
   blockCountY: React.MutableRefObject<number>;
-  blockSize: React.MutableRefObject<string>;
 };
 
-function Grid({ gridContainer, grid, blockCountX, blockCountY, blockSize }: GridProps) {
+function Grid({ gridContainer, grid, blockCountX, blockCountY }: GridProps) {
   return (
     <div
       className={gridcss.container}
@@ -26,7 +25,7 @@ function Grid({ gridContainer, grid, blockCountX, blockCountY, blockSize }: Grid
           >
             {row.map((col, x) => {
               return (
-                <div key={`${y}-${x}`} className={gridcss.row__col} style={{ width: blockSize.current }} data-x={x}>
+                <div key={`${y}-${x}`} className={gridcss.row__col} data-x={x}>
                   {col === null ? null : <div className={gridcss.cell__ocupied}></div>}
                 </div>
               );

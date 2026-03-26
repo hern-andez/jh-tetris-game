@@ -1,15 +1,17 @@
 import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
 
-import { root } from "./ui/components/utils/utils";
-import Game from "./ui/components/game";
-import Home from "./ui/components/home";
+import { root } from "./utils/utils";
+import Game from "./ui/game";
+import Home from "./ui/home";
 import "./tetris.css";
 
 export function App() {
   const [start, setStart] = useState<boolean>(false); // Inicia el juego
   const [controls, setControls] = useState<boolean>(false); // Activa los controles
   const [ending, setEnding] = useState<boolean>(false); // Termina el juego
+
+  if (!navigator.serviceWorker.controller) navigator.serviceWorker.register("./sw.js"); // Sw para cacher la app
 
   return (
     <StrictMode>

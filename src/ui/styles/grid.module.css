@@ -1,11 +1,16 @@
 .container {
   --separate-padding: 2px;
+  --block-size: clamp(12px, min(3dvw, 3dvh), 30px);
   grid-area: grid;
   background-color: color-mix(in srgb, var(--primary-color) 30%, transparent 100%);
   padding: var(--separate-padding);
   display: grid;
   gap: 1px;
   position: relative;
+}
+
+.container:has(#controls) {
+  --block-size: clamp(14px, min(3.1dvw, 3.1dvh), 32px);
 }
 
 .container::before,
@@ -37,7 +42,12 @@
 .container__row .row__col,
 .container .figure__created {
   background-color: var(--secondary-color);
+  width: var(--block-size);
   aspect-ratio: 1/1;
+  transform: translate(
+    calc(var(--block-size) * var(--coor-x) + calc(var(--coor-x) * 1px)),
+    calc(var(--block-size) * var(--coor-y) + calc(var(--coor-y) * 1px))
+  );
   position: relative;
 }
 

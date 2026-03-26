@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { Icon } from "@iconify/react";
 
 // import { figurasFondo } from "./utilidades";
-import homecss from "../styles/home.module.css";
+import homecss from "./styles/home.module.css";
 
 type HomeProps = {
   setStart: React.Dispatch<React.SetStateAction<boolean>>;

@@ -1,14 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 
 // import { StatusGame, GameControls, GameOver } from "./extraComponents";
-import useTetrisFunctions from "./hooks/useTetrisFunctions";
+import useFigureFunctions from "./hooks/useFigureFunctions";
 import Points from "./points";
 import Next from "./next";
 import Controls from "./controls";
 import Grid from "./grid";
-import gamecss from "../styles/game.module.css";
-import gridcss from "../styles/grid.module.css";
-import { getFigure } from "./features/features";
+import gamecss from "./styles/game.module.css";
+import gridcss from "./styles/grid.module.css";
+import { getFigure } from "../features/features";
 // import { seconds, figuras } from "./utilidades";
 // import {
 //   soundGame,
@@ -38,7 +38,6 @@ function Game({ controls, gameState }: GameProps) {
   // const modalPaused: React.RefObject<HTMLDivElement> = useRef(null); // Modal de Juego Pausado
   // const btnSound: React.RefObject<HTMLButtonElement> = useRef(null); // Icono de sonido del modal de Juego Pausado
   // const pointsGame: React.RefObject<HTMLDivElement> = useRef(null); //Sección de puntos en tiempo real
-  // const newFigure: React.RefObject<HTMLDivElement> = useRef(null); // Contenedor que indica la siguiente figura
   // const fallEnabled: React.RefObject<HTMLButtonElement> = useRef(null); // Botón de caída rápida del componente controles
   // const statusH4: React.RefObject<HTMLHeadingElement> = useRef(null); // Titulo del status
   // const statusButton: React.RefObject<HTMLButtonElement> = useRef(null); // Botón de pausa
@@ -46,16 +45,13 @@ function Game({ controls, gameState }: GameProps) {
   const blockCountX = useRef(11); // Cantidad de columnas por fila
   const blockCountY = useRef(18); // Cantidad de filas
   // const medidasContenedo = useRef<number>(0); // Medidas dinámicas del contenedor
-  const blockSize = useRef<string>(
-    `clamp(${controls ? "12px, min(3dvw, 3dvh), 30px" : "14px, min(3.1dvw, 3.1dvh), 32px"})`,
-  ); // Medidas para cada celda
   // Estado
   const render = useRef<boolean>(false); // Renderiza el juego una sola vez
   // const gameOver = useRef(false); // Finaliza el juego
   // const gamePaused = useRef<boolean>(false); // Indica que el juego esta pausado
   // points: number = 0, // Puntos en tiempo real
   const figure = useRef<(null | 1 | 2)[][]>(getFigure()); // Primer figura
-  const nextFigure = useRef<(null | 1 | 2)[][]>(getFigure()); // Figura siguiente
+  const [nextFigure, setNextFigure] = useState<(null | 1 | 2)[][]>(getFigure()); // Figura siguiente
   // const figurePaused = useRef<boolean>(false); // Pausa la aparición de la nueva figura cuando colisiona
   // const timeStop = useRef<number>(0); // Determina el tiempo que va a pasar para que vuelva a aparecer la nueva figura
   const reflectionCoor = useRef<number>(0); // La coordenada 'Y' máxima de la figura actual
@@ -66,38 +62,48 @@ function Game({ controls, gameState }: GameProps) {
   const coorX = useRef<number>(Math.floor((blockCountX.current - figure.current[0].length) / 2));
   const coorY = useRef<number>(0);
   const coorXPrevious = useRef<number>(0); // Coordenadas y copia de 'X' para ejecutar el reflejo
-  // const updateTime = useRef<number>(0);
+  const updateTime = useRef<number>(0);
   // const moreSpeed = useRef<number>(0); // Hace caer en 'Y' la figura cuando updateTime >= moreSpeed
   // const countMoreSpeed = useRef<Date>(new Date()); // Tiempo que aumenta la velocidad de caída automática de la figura
   // const intervalTime = useRef<undefined | number>(undefined); // Temporizador que actualiza countMoreSpeed
-  // const countStopMove = useRef<Date>(new Date()); // Tiempo que debe pasar para ejecutar la funcione mover
+  const countStopMove = useRef<Date>(new Date()); // Tiempo que debe pasar para ejecutar la funcione mover
   // const moveTimeStop = useRef<undefined | number>(undefined); // Temporizador que actualiza countStopMove
   // const sumTimeStop = useRef(160); // Milisegundo para ejecutar moveTimeStop
-  // const soundsEnabled = useRef<boolean>(false); // Habilita o deshabilita los sonidos
+  const soundsEnabled = useRef<boolean>(false); // Habilita o deshabilita los sonidos
   const figureCells = useRef<(null | HTMLDivElement)[][]>([]);
 
-  const { create } = useTetrisFunctions({
+  const { create, move } = useFigureFunctions({
+    nextFigure,
+    setNextFigure,
     figureCells,
     gridContainer,
     className: gridcss,
     figure,
     grid,
+    blockCountX,
     coorX,
     coorY,
-    blockSize,
     reflectionCoor,
     coorXPrevious,
     couldItFall,
+    countStopMove,
+    updateTime,
+    soundsEnabled,
   });
 
   useEffect(() => {
     if (!render.current) {
+      document.addEventListener("keydown", handleKeyDown);
       render.current = true;
-      // newFigure.current.style.height = `${2 * blockSize}px`;
-      // startGame();
+
       create();
+      // startGame();
     }
-  });
+
+    return () => {
+      document.onkeydown = null;
+    };
+  }, []);
 
   // // Comienza el juego, agregando en eventos, estado inicial, comienza los temporizadores y dibuja la primer figura
   // function startGame() {
@@ -121,7 +127,7 @@ function Game({ controls, gameState }: GameProps) {
   //     moreSpeed = 70;
   //     countMoreSpeed = new Date();
   //     countMoreSpeed.setSeconds(0);
-  //     countStopMove = new Date();
+  // countStopMove = new Date();
   //     countStopMove.setSeconds(0);
 
   //     // Habilita los sonidos por primera vez al entrar en la pagina
@@ -300,192 +306,6 @@ function Game({ controls, gameState }: GameProps) {
 
   // Function actualizar
 
-  // // Elimina la figura de la matriz
-  // function eliminarFigura(): void {
-  //   figura.forEach((fila, y) => {
-  //     fila.forEach((columna, x) => {
-  //       if (columna !== null) cuadricula[y + coorY][x + coorX] = null;
-  //     });
-  //   });
-  // }
-
-  // // Finaliza el juego si una celda de la nueva figura ya esta ocupada en el tablero
-  // function canShow(): boolean {
-  //   for (let y = coorY; y - coorY < figura.length; y++) {
-  //     for (let x = coorX; x - coorX < figura[y - coorY].length; x++) {
-  //       if (cuadricula[y][x] && figura[y - coorY][x - coorX]) return false;
-  //     }
-  //   }
-
-  //   return true;
-  // }
-
-  // // Determina si una figura es capaz de moverse en eje 'X, Y'
-  // function canMove(eje: "x" | "y", val: 1 | -1): boolean {
-  //   if (
-  //     (eje === "x" && coorX + val >= 0 && coorX + figura[0].length - 1 + val < cuadricula[0].length) ||
-  //     (eje === "y" && coorY + figura.length < cuadricula.length)
-  //   ) {
-  //     // No se ejecuta si la figura esta en los limites 'X, Y' del tablero
-  //     const move: number[][] = [];
-
-  //     for (let y = coorY; y < coorY + figura.length; y++) {
-  //       for (let x = coorX; x < coorX + figura[0].length; x++) {
-  //         if (eje === "x" && figura[y - coorY][x - coorX] && cuadricula[y][x + val] === null) {
-  //           move.push([y, x + val]);
-  //           break; // Guarda las nuevas coordenadas en eje 'X' si las celdas + o - 1 están vacías
-  //         }
-
-  //         if (eje === "y" && figura[y - coorY][x - coorX]) {
-  //           if (cuadricula[y + val]) {
-  //             if (figura[y - coorY + val]) {
-  //               if (figura[y - coorY + val][x - coorX]) continue; // Cuando la figura tiene la celda 'X' en diferentes 'Y' ocupada, Ejemplo: figura[0][0] = 1, figura[1][0] = 1;
-  //             }
-  //             if (cuadricula[y + val][x] === null) move.push([y + val, x]); // Guarda las nuevas coordenadas en 'Y' si las celdas + 1 están vacías
-  //           } else if (y + val === cuadricula.length || cuadricula[y + val][x]) return false; // Indica que no se puede mover si llega al limite del tablero o si la celda de la cuadricula esta ocupada
-  //         }
-  //       }
-  //     }
-
-  //     // Si los longitudes coinciden indica que se puede mover
-  //     if (eje === "x" && move.length === figura.length) return true;
-  //     else if (eje === "y" && move.length === figura[0].length) return true;
-  //     else return false;
-  //   } else {
-  //     return false; // No se puede mover si se encuentra en los límites del tablero
-  //   }
-  // }
-
-  // // Mueve o establece la figura, indica si el juego a terminado y llama otras funciones
-  // function mover(eje: "x" | "y", val: 1 | -1, isMoveAutomatic = false): void {
-  //   // if (countStopMove.getSeconds() > 0) {
-  //   //   const mover = canMove(eje, val);
-  //   //   if (mover) {
-  //   //     // Si la figura se puede mover se borra la posición, se actualizan las coordenadas, se dibuja en su nueva posición, y se reinicia el tiempo para volver a llamar la función
-  //   //     eliminarFigura();
-  //   //     coorXPrevious = coorX;
-  //   //     if (eje === "x") coorX += val;
-  //   //     else if (eje === "y") {
-  //   //       coorY += val;
-  //   //       updateTime = 0;
-  //   //     }
-  //   //     actualizarFigura();
-  //   //     if (soundsEnabled === true) soundMove.play();
-  //   //     if (isMoveAutomatic === false) countStopMove.setSeconds(0); // Resetea el conteo si el movimiento no fue automático (Función updateGame)
-  //   //   } else if (eje === "y" && !mover) {
-  //   //     actualizarFigura(); // Actualiza los atributos data- de la figura actual
-  //   //     // Data para la nueva figura
-  //   //     figura = cellNewFigure;
-  //   //     coorX = Math.floor((blockCountX - figura[0].length) / 2);
-  //   //     coorY = 0;
-  //   //     updateTime = 0;
-  //   //     if (canShow()) {
-  //   //       deleteRow();
-  //   //       // Permite que se establezca el valor de timeStop
-  //   //       setTimeout(() => {
-  //   //         setTimeout(() => {
-  //   //           if (newFigure.current) newFigure.current.textContent = "";
-  //   //           figurePaused = false;
-  //   //           updateTime = 0;
-  //   //           enabledBtns("addEventListener", false);
-  //   //           crearFigura();
-  //   //           showNewFigure();
-  //   //           if (isMoveAutomatic === false) countStopMove.setSeconds(0);
-  //   //         }, timeStop);
-  //   //       }, 10);
-  //   //     } else {
-  //   //       gameOver = true;
-  //   //     }
-  //   //   }
-  //   // }
-  // }
-
-  // // Verifica si hay filas enteras ocupadas, si es que hay las elimina y suma los puntos
-  // function deleteRow(): void {
-  //   enabledBtns("removeEventListener", true);
-  //   timeStop = 200;
-  //   let sumPoints = points; // Puntos actuales
-  //   let filasBorradas = 0; // Hace un conteo de las filas borradas para ver que audio va a sonar
-  //   let lastIndexRows: number; // Índices de la ultima fila borrada
-
-  //   for (let row = 0; row < cuadricula.length; row++) {
-  //     if (cuadricula[row].every((val) => !!val)) {
-  //       figurePaused = true;
-  //       timeStop = 1000;
-  //       filasBorradas++;
-  //       lastIndexRows = row;
-
-  //       cuadricula[row].forEach((point) => (points += point === 1 ? 13 : 19)); // Suma los puntos de las celdas comunes y especiales
-  //       cuadricula.splice(row, 1); // Borra la fila
-  //       cuadricula.unshift(Array.from({ length: blockCountX }, () => null)); // Agrega una nueva al principio la nueva fila
-
-  //       // Activa el sonido
-  //       if (soundsEnabled === true) {
-  //         if (filasBorradas === 1) soundCompleteLine.play();
-  //         if (filasBorradas === 3) {
-  //           soundCompleteLine2.currentTime = 0.2;
-  //           soundCompleteLine2.play();
-  //         }
-  //       }
-
-  //       // Anima todas las columnas de la fila del tablero
-  //       document.querySelectorAll(`.${gamecss.background__cell}[data-y='${row}']`).forEach((cell) => {
-  //         setTimeout(() => cell.classList.add(`${game["background-cell-delete"]}`), 0.0001);
-  //       });
-
-  //       // Remueve todas las columnas
-  //       document.querySelectorAll(`.${gamecss.cell__figure}[data-y='${row}']`).forEach((cell) => cell.remove());
-
-  //       // Dibuja las celdas ocupadas en su nueva posición
-  //       if (filasBorradas === 1) {
-  //         setTimeout(() => {
-  //           let setCellPosition = lastIndexRows; // Establece las filas en su nueva posición
-
-  //           // Recorre las filas desde la ultima fila borrada hasta la primera fila del tablero
-  //           for (let y = lastIndexRows - 1; y >= 0; y--) {
-  //             const cells: NodeListOf<HTMLDivElement> = document.querySelectorAll(
-  //               `.${gamecss.cell__figure}[data-y='${y}']`,
-  //             );
-
-  //             if (cells.length > 0) {
-  //               // Si hay filas con una o mas celdas
-  //               cells.forEach((cell) => {
-  //                 const dataX = cell.getAttribute("data-x");
-
-  //                 if (dataX) {
-  //                   const numberDataX = parseInt(dataX);
-
-  //                   cell.setAttribute("data-y", `${setCellPosition}`);
-  //                   cell.style.transform = `translate(${numberDataX * blockSize}px, ${setCellPosition * blockSize}px)`;
-  //                 }
-  //               });
-
-  //               setCellPosition--;
-  //             }
-  //           }
-  //         }, 500);
-  //       }
-  //     }
-  //   }
-
-  //   setTimeout(() => {
-  //     removeClass(`${game["background-cell-delete"]}`); // Desactiva la animación de filas borradas
-
-  //     if (sumPoints !== points) {
-  //       // Anima el incremento de puntos
-  //       const sumador = setInterval(() => {
-  //         if (sumPoints > points) clearInterval(sumador);
-  //         else {
-  //           if (pointsgamecss.current) {
-  //             pointsgamecss.current.textContent = `${sumPoints}`;
-  //             sumPoints++;
-  //           }
-  //         }
-  //       }, 5);
-  //     }
-  //   }, 500);
-  // }
-
   // // Rota la figura si es que puede hacerlo
   // function rotarFigura(): void {
   //   let comodinX = 0; // Índices de la figuraRotada
@@ -572,53 +392,18 @@ function Game({ controls, gameState }: GameProps) {
   //   }
   // }
 
-  // // Dibuja la siguiente figura al lado de los puntos
-  // function showNewFigure(): void {
-  //   cellNewFigure = obtenerFigura(); // Obtiene la siguiente figura
-
-  //   // Da las dimensiones y celdas en css al contenedor
-  //   if (newFigure.current) {
-  //     newFigure.current.style.width = `${cellNewFigure[0].length * blockSize}px`;
-  //     newFigure.current.style.height = `${cellNewFigure.length * blockSize}px`;
-  //     newFigure.current.style.marginBottom = `${cellNewFigure.length === 1 ? blockSize : 0}px`;
-  //     newFigure.current.style.gridTemplateColumns = `repeat(${cellNewFigure[0].length}, 1fr)`;
-  //     newFigure.current.style.gridTemplateRows = `repeat(${cellNewFigure.length}, 1fr)`;
-  //   }
-
-  //   // Agrega los estilos parecidos del tablero a los hijos y animación de flasheo a celdas especiales
-  //   for (let y = 0; y < cellNewFigure.length; y++) {
-  //     for (let x = 0; x < cellNewFigure[y].length; x++) {
-  //       const div = document.createElement("div");
-
-  //       div.classList.add(cellNewFigure[y][x] ? `${gamecss.occupied_cell}` : `${gamecss.empty_cell}`);
-  //       if (cellNewFigure[y][x] === 2) div.style.animation = "cell_flash .7s infinite";
-
-  //       if (newFigure.current) newFigure.current.appendChild(div);
-  //     }
-  //   }
-  // }
-
-  // // Indica la accion basada en los eventos de teclado
-  // function handleKeyDown(e: React.KeyboardEvent<Document>): void {
-  //   const keyDown: string = e.code;
-
-  //   // Mover en eje 'X, Y', rotar y establecer la figura a su punto Y máximo
-  //   if (keyDown === "ArrowUp") rotarFigura();
-  //   else if (countStopMove.getSeconds() > 0) {
-  //     if (keyDown === "ArrowLeft") mover("x", -1);
-  //     else if (keyDown === "ArrowRight") mover("x", 1);
-  //     else if (keyDown === "ArrowDown") mover("y", 1);
-  //     else if (keyDown === "Space") puntoMaximo();
-  //   }
-  // }
-
-  // // Habilita o deshabilita los botones y eventos del juego
-  // function enabledBtns(event: "addEventListener" | "removeEventListener", valueBtns: boolean): void {
-  //   document[event]("keydown", handleKeyDown as unknown as EventListener);
-  //   document.querySelectorAll(`.${gamecss.controls} button`).forEach((btn) => {
-  //     if (btn instanceof HTMLButtonElement) btn.disabled = valueBtns;
-  //   });
-  // }
+  // Indica la accion basada en los eventos de teclado
+  async function handleKeyDown(e: KeyboardEvent): Promise<void> {
+    const keyDown: string = e.code;
+    // Mover en eje 'X, Y', rotar y establecer la figura a su punto Y máximo
+    // if (keyDown === "ArrowUp") rotarFigura();
+    // else if (countStopMove.getSeconds() > 0) {
+    if (keyDown === "ArrowLeft") await move("x", -1);
+    else if (keyDown === "ArrowRight") await move("x", 1);
+    else if (keyDown === "ArrowDown") await move("y", 1);
+    // else if (keyDown === "Space") puntoMaximo();
+    // }
+  }
 
   // // Habilita o des habilita los sonidos
   // function setSoundsGame() {
@@ -663,89 +448,11 @@ function Game({ controls, gameState }: GameProps) {
   //   }
   // }
 
-  // return (
-  //   <div className={gamecss.game__tetris}>
-  //     <div className={gamecss.pausedBackground} ref={modalPaused}>
-  //       <div className={gamecss.paused__panel}>
-  //         <h1>Game Paused</h1>
-  //         <button
-  //           onClick={() => {
-  //             handleModalPaused();
-  //           }}
-  //           role="button"
-  //           aria-label="Continuar Juego"
-  //         >
-  //           Continue
-  //         </button>
-  //         <button
-  //           onClick={() => {
-  //             gameOver = true;
-  //             handleModalPaused();
-  //           }}
-  //           role="button"
-  //           aria-label="Resetear Juego"
-  //         >
-  //           Reset
-  //         </button>
-  //         <button
-  //           className={`material-symbols-outlined ${gamecss.panel_btn_sound}`}
-  //           onClick={() => {
-  //             setSoundsGame();
-  //           }}
-  //           ref={btnSound}
-  //           role="button"
-  //           aria-label="Volumen"
-  //         >
-  //           volume_up
-  //         </button>
-  //       </div>
-  //     </div>{" "}
-  //     {/* Modal de Juego pausado */}
-  //     <StatusGame
-  //       blockSize={blockSize}
-  //       points={points}
-  //       h4={statusH4}
-  //       button={statusButton}
-  //       pointsGame={pointsGame}
-  //       newFigure={newFigure}
-  //       modal={() => handleModalPaused()}
-  //     />{" "}
-  //     {/* Estado del juego */}
-  //     <div
-  //       className={gamecss.background}
-  //       style={{ width: `${blockSize * blockCountX + 2}px`, height: `${blockSize * blockCountY + 2}px` }}
-  //       ref={container}
-  //     >
-  //       {cuadricula.map((fila, filaIndex) => {
-  //         return fila.map((_, columnaIndex) => {
-  //           return (
-  //             <div
-  //               key={`${filaIndex}-${columnaIndex}`}
-  //               className={gamecss.background__cell}
-  //               data-x={columnaIndex}
-  //               data-y={filaIndex}
-  //             ></div>
-  //           );
-  //         });
-  //       })}
-  //     </div>{" "}
-  //     {/* Tablero */}
-  //     {controls ? <GameControls functions={[mover, rotarFigura, puntoMaximo]} button={fallEnabled} /> : []}
-  //     {over ? <GameOver setOver={setOver} /> : null} {/* Modal de juego terminado */}
-  //   </div>
-  // );
-
   return (
     <div className={gamecss.game}>
       <div className={gamecss.game__container}>
         <Points points={points} />
-        <Grid
-          gridContainer={gridContainer}
-          grid={grid}
-          blockCountX={blockCountX}
-          blockCountY={blockCountY}
-          blockSize={blockSize}
-        />
+        <Grid gridContainer={gridContainer} grid={grid} blockCountX={blockCountX} blockCountY={blockCountY} />
         <Next nextFigure={nextFigure} />
         {controls ? <Controls /> : null}
       </div>

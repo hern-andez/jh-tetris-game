@@ -1,10 +1,10 @@
 import { Icon } from "@iconify/react";
 
-import controlscss from "../styles/controls.module.css";
+import controlscss from "./styles/controls.module.css";
 
 function Controls() {
   return (
-    <div className={controlscss.container}>
+    <div className={controlscss.container} id="controls">
       <button className={controlscss.container__btn}>
         <Icon icon={"ic:baseline-keyboard-arrow-left"} />
       </button>

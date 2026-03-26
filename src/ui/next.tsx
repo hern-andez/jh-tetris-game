@@ -1,10 +1,6 @@
-import React from "react";
+import gamecss from "./styles/game.module.css";
 
-import gamecss from "../styles/game.module.css";
-
-type NextProps = { nextFigure: React.MutableRefObject<(null | 1 | 2)[][]> };
-
-function Next({ nextFigure }: NextProps) {
+function Next({ nextFigure }: { nextFigure: (null | 1 | 2)[][] }) {
   return (
     <div className={gamecss.child__container} style={{ gridArea: "next" }}>
       <div className={gamecss.container__next}>
@@ -12,9 +8,9 @@ function Next({ nextFigure }: NextProps) {
       </div>
       <div
         className={`${gamecss.container__next} ${gamecss["value"]}`}
-        style={{ gridTemplateColumns: `repeat(${nextFigure.current[0].length}, 10px)` }}
+        style={{ gridTemplateColumns: `repeat(${nextFigure[0].length}, 10px)` }}
       >
-        {nextFigure.current.map((row, y) => {
+        {nextFigure.map((row, y) => {
           return row.map((col, x) => {
             return <div key={`${y}-${x}`} className={col === null ? "" : gamecss.figure__cell}></div>;
           });
