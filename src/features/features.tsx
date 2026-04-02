@@ -1,10 +1,10 @@
-import { gameFigures } from "../utils/utils";
+import { gameFigures } from "@utils/utils";
 
 /**
  * Devuelve una figura aleatorio
  * @returns Figura
  */
-export function getFigure(): (null | 1 | 2)[][] {
+export function getFigure(): (null | 1)[][] {
   return gameFigures[Math.floor(Math.random() * gameFigures.length)];
 }
 
@@ -44,20 +44,10 @@ export function getDivCell({ container, dataY, dataX, className }: GetDivCellPro
 }
 
 interface GameProps {
-  grid: React.MutableRefObject<(1 | 2 | null)[][]>;
-  figure: React.MutableRefObject<(1 | 2 | null)[][]>;
+  grid: React.MutableRefObject<(1 | null)[][]>;
+  figure: React.MutableRefObject<(1 | null)[][]>;
   coorY: React.MutableRefObject<number>;
   coorX: React.MutableRefObject<number>;
-}
-/**
- * Elimina la figura de la matriz
- */
-export function removeGridFigure({ grid, figure, coorY, coorX }: GameProps): void {
-  figure.current.forEach((row, y) => {
-    row.forEach((col, x) => {
-      if (col !== null) grid.current[y + coorY.current][x + coorX.current] = null;
-    });
-  });
 }
 
 /**
@@ -78,8 +68,8 @@ export function canShow({ grid, figure, coorY, coorX }: GameProps): boolean {
 
 // Habilita o deshabilita los botones y eventos del juego
 // export function enabledBtns(event: "addEventListener" | "removeEventListener", valueBtns: boolean): void {
-// document[event]("keydown", handleKeyDown as unknown as EventListener);
-// document.querySelectorAll(`.${gamecss.controls} button`).forEach((btn) => {
-// if (btn instanceof HTMLButtonElement) btn.disabled = valueBtns;
-// });
+//   document[event]("keydown", handleKeyDown as unknown as EventListener);
+//   document.querySelectorAll(`.${gamecss.controls} button`).forEach((btn) => {
+//     if (btn instanceof HTMLButtonElement) btn.disabled = valueBtns;
+//   });
 // }

@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 
 // import { StatusGame, GameControls, GameOver } from "./extraComponents";
-import useFigureFunctions from "./hooks/useFigureFunctions";
-import Points from "./points";
-import Next from "./next";
-import Controls from "./controls";
-import Grid from "./grid";
+import useFigureFunctions from "../hooks/useFigureFunctions";
+import Points from "@components/points";
+import Next from "@components/next";
+import Controls from "@components/controls";
+import Grid from "@components/grid";
+import gridcss from "@components/styles/grid.module.css";
 import gamecss from "./styles/game.module.css";
-import gridcss from "./styles/grid.module.css";
 import { getFigure } from "../features/features";
 // import { seconds, figuras } from "./utilidades";
 // import {
@@ -32,7 +32,6 @@ type GameProps = {
 // Juego, puntos, controles, modal de Juego pausado y Game Over
 function Game({ controls, gameState }: GameProps) {
   const [points, setPoints] = useState<number>(0);
-  console.log(gameState, setPoints);
   // const [over, setOver] = gameState; // Determina si el juego a acabado
   const gridContainer: React.RefObject<HTMLDivElement> = useRef(null);
   // const modalPaused: React.RefObject<HTMLDivElement> = useRef(null); // Modal de Juego Pausado
@@ -50,13 +49,13 @@ function Game({ controls, gameState }: GameProps) {
   // const gameOver = useRef(false); // Finaliza el juego
   // const gamePaused = useRef<boolean>(false); // Indica que el juego esta pausado
   // points: number = 0, // Puntos en tiempo real
-  const figure = useRef<(null | 1 | 2)[][]>(getFigure()); // Primer figura
-  const [nextFigure, setNextFigure] = useState<(null | 1 | 2)[][]>(getFigure()); // Figura siguiente
-  // const figurePaused = useRef<boolean>(false); // Pausa la aparición de la nueva figura cuando colisiona
-  // const timeStop = useRef<number>(0); // Determina el tiempo que va a pasar para que vuelva a aparecer la nueva figura
+  const figure = useRef<(null | 1)[][]>(getFigure()); // Primer figura
+  const [nextFigure, setNextFigure] = useState<(null | 1)[][]>(getFigure()); // Figura siguiente
+  const figurePaused = useRef<boolean>(false); // Pausa la aparición de la nueva figura cuando colisiona
+  const timeStop = useRef<number>(0); // Determina el tiempo que va a pasar para que vuelva a aparecer la nueva figura
   const reflectionCoor = useRef<number>(0); // La coordenada 'Y' máxima de la figura actual
   const couldItFall = useRef<boolean>(false); // Indica si la figura puede caer en donde indique reflectionCoor
-  const grid = useRef<(null | 1 | 2)[][]>(
+  const grid = useRef<(null | 1)[][]>(
     Array.from({ length: blockCountY.current }, () => Array(blockCountX.current).fill(null)),
   );
   const coorX = useRef<number>(Math.floor((blockCountX.current - figure.current[0].length) / 2));
@@ -72,14 +71,16 @@ function Game({ controls, gameState }: GameProps) {
   const soundsEnabled = useRef<boolean>(false); // Habilita o deshabilita los sonidos
   const figureCells = useRef<(null | HTMLDivElement)[][]>([]);
 
-  const { create, move } = useFigureFunctions({
+  const { create, move, rotate, collide } = useFigureFunctions({
     nextFigure,
     setNextFigure,
+    setPoints,
     figureCells,
     gridContainer,
     className: gridcss,
     figure,
     grid,
+    blockCountY,
     blockCountX,
     coorX,
     coorY,
@@ -88,6 +89,8 @@ function Game({ controls, gameState }: GameProps) {
     couldItFall,
     countStopMove,
     updateTime,
+    timeStop,
+    figurePaused,
     soundsEnabled,
   });
 
@@ -97,6 +100,8 @@ function Game({ controls, gameState }: GameProps) {
       render.current = true;
 
       create();
+      setInterval(() => countStopMove.current.setSeconds(1), 100);
+
       // startGame();
     }
 
@@ -306,103 +311,20 @@ function Game({ controls, gameState }: GameProps) {
 
   // Function actualizar
 
-  // // Rota la figura si es que puede hacerlo
-  // function rotarFigura(): void {
-  //   let comodinX = 0; // Índices de la figuraRotada
-  //   const figuraRotada: (null | 1 | 2)[][] = [];
-  //   const figureCellRotate: (HTMLDivElement | null)[][] = [];
-
-  //   // Rota la figura empezando en la ultima columna hasta la primera
-  //   for (let y = 0; y < figura.length; y++) {
-  //     for (let x = figura[y].length - 1; x >= 0; x--) {
-  //       if (!figuraRotada[comodinX]) figuraRotada[comodinX] = [figura[y][x]];
-  //       else figuraRotada[comodinX].push(figura[y][x]);
-
-  //       if (!figureCellRotate[comodinX]) figureCellRotate[comodinX] = [figureCells[y][x]];
-  //       else figureCellRotate[comodinX].push(figureCells[y][x]);
-
-  //       if (x - 1 !== -1) comodinX += 1;
-  //       else comodinX = 0;
-  //     }
-  //   }
-
-  //   const yLess = figura.length - figuraRotada.length; // Evita que al rotar la figura pueda haber errores en la coordenada Y
-  //   if (cuadricula[coorY + yLess] && coorX + figuraRotada[0].length - 1 < cuadricula[0].length) {
-  //     // Verifica si la fila existe y si la columna de la figura rotada no sobrepasa los limites del canvas
-  //     eliminarFigura();
-
-  //     if (cuadricula[coorY + yLess][coorX + figuraRotada.length - 1] === null) {
-  //       for (let y = 0; y < figuraRotada.length; y++) {
-  //         for (let x = 0; x < figuraRotada[y].length; x++) {
-  //           if (cuadricula[coorY + y + yLess][coorX + x] !== null && figuraRotada[y][x]) {
-  //             actualizarFigura();
-  //             return; // Si alguna celda de la figura rotada ya esta ocupada no rota
-  //           }
-  //         }
-  //       }
-
-  //       // Si todas están vacías se establece la coordenada 'Y' fija actual y se dibuja la la figura
-  //       coorY += yLess;
-  //       figura = figuraRotada;
-  //       figureCells = figureCellRotate;
-  //       actualizarFigura();
-  //       calcularPuntoMaximo();
-  //     }
-  //   }
-  // }
-
-  // // Mueve la figura hasta su punto máximo en 'Y'
-  // function puntoMaximo(): void {
-  //   if (itMayFall && !figurePaused && countStopMove.getSeconds() > 0) {
-  //     if (soundsEnabled) {
-  //       soundFall.currentTime = 1;
-  //       soundFall.playbackRate = 0.6;
-  //       soundFall.play();
-  //     }
-
-  //     figurePaused = true;
-  //     enabledBtns("removeEventListener", true);
-  //     removeClass(`${game["background-cell-down"]}`);
-  //     eliminarFigura();
-
-  //     const countRows = coorFigurebellow + figura.length - 1 - coorY; // Cantidad de filas que tendrán la animación
-  //     const countOpacity = parseFloat((1 / countRows).toFixed(3)); // Cantidad de opacidad
-  //     let opacidad = countOpacity; // Baja la opacidad a medida que llega a las ultimas filas
-
-  //     for (let fila = coorY; fila < coorFigurebellow + figura.length; fila++) {
-  //       for (let columna = coorX; columna < coorX + figura[0].length; columna++) {
-  //         const cell = document.querySelector(`.${gamecss.background__cell}[data-x='${columna}'][data-y='${fila}']`);
-  //         if (cell instanceof HTMLDivElement) cell.style.backgroundColor = `rgba(0, 0, 255, ${opacidad})`;
-  //       }
-
-  //       opacidad += countOpacity;
-  //     }
-
-  //     // Baja la figura hasta su punto máximo
-  //     coorY = coorFigurebellow;
-  //     actualizarFigura();
-
-  //     setTimeout(() => {
-  //       // Establece la figura como fija y restablece la animacion
-  //       mover("y", 1);
-
-  //       const cells: NodeListOf<HTMLDivElement> = document.querySelectorAll(`.${gamecss.background__cell}[style]`);
-  //       cells.forEach((cell) => (cell.style.backgroundColor = "#000d"));
-  //     }, 250);
-  //   }
-  // }
-
   // Indica la accion basada en los eventos de teclado
   async function handleKeyDown(e: KeyboardEvent): Promise<void> {
     const keyDown: string = e.code;
     // Mover en eje 'X, Y', rotar y establecer la figura a su punto Y máximo
-    // if (keyDown === "ArrowUp") rotarFigura();
-    // else if (countStopMove.getSeconds() > 0) {
-    if (keyDown === "ArrowLeft") await move("x", -1);
-    else if (keyDown === "ArrowRight") await move("x", 1);
-    else if (keyDown === "ArrowDown") await move("y", 1);
-    // else if (keyDown === "Space") puntoMaximo();
-    // }
+
+    if (figurePaused.current === false) {
+      if (keyDown === "ArrowUp") rotate();
+      // else if (countStopMove.getSeconds() > 0) {
+      if (keyDown === "ArrowLeft") await move("x", -1);
+      else if (keyDown === "ArrowRight") await move("x", 1);
+      else if (keyDown === "ArrowDown") await move("y", 1);
+      else if (keyDown === "Space") collide();
+      // }
+    }
   }
 
   // // Habilita o des habilita los sonidos
@@ -454,7 +376,7 @@ function Game({ controls, gameState }: GameProps) {
         <Points points={points} />
         <Grid gridContainer={gridContainer} grid={grid} blockCountX={blockCountX} blockCountY={blockCountY} />
         <Next nextFigure={nextFigure} />
-        {controls ? <Controls /> : null}
+        {controls ? <Controls move={move} rotate={rotate} collide={collide} /> : null}
       </div>
     </div>
   );

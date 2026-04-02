@@ -3,15 +3,14 @@
 .container {
   grid-area: btn;
   display: flex;
-  justify-content: space-around;
-  gap: min(10px, 2dvw);
+  justify-content: space-evenly;
 }
 
 .container .container__btn {
   background-color: var(--secondary-color);
   color: var(--primary-color);
-  font-size: clamp(22px, 7dvw, 30px);
-  padding: 3px clamp(9px, 3dvw, 13px);
+  font-size: clamp(25px, 6.2dvw, 36px);
+  padding: 1dvh clamp(9px, 3.4dvw, 16px);
   border: 1px solid var(--third-color);
   border-radius: 10px;
   display: grid;

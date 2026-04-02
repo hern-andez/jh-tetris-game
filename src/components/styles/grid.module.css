@@ -1,16 +1,17 @@
 .container {
   --separate-padding: 2px;
-  --block-size: clamp(12px, min(3dvw, 3dvh), 30px);
+  --separate-gap: 1px;
+  --block-size: clamp(13px, min(4dvw, 4dvh), 30px);
   grid-area: grid;
   background-color: color-mix(in srgb, var(--primary-color) 30%, transparent 100%);
   padding: var(--separate-padding);
   display: grid;
-  gap: 1px;
+  gap: var(--separate-gap);
   position: relative;
 }
 
-.container:has(#controls) {
-  --block-size: clamp(14px, min(3.1dvw, 3.1dvh), 32px);
+body:has([id="controls"]) .container {
+  --block-size: clamp(13px, min(3.6dvw, 3.6dvh), 30px);
 }
 
 .container::before,
@@ -27,16 +28,16 @@
 }
 
 .container::before {
-  left: calc(var(--separate-items) * -1.7);
+  left: calc(var(--gap-col) * -1.7);
 }
 
 .container::after {
-  right: calc(var(--separate-items) * -1.7);
+  right: calc(var(--gap-col) * -1.7);
 }
 
 .container .container__row {
   display: grid;
-  gap: 1px;
+  gap: var(--separate-gap);
 }
 
 .container__row .row__col,
@@ -45,20 +46,17 @@
   width: var(--block-size);
   aspect-ratio: 1/1;
   transform: translate(
-    calc(var(--block-size) * var(--coor-x) + calc(var(--coor-x) * 1px)),
-    calc(var(--block-size) * var(--coor-y) + calc(var(--coor-y) * 1px))
+    calc(var(--block-size) * var(--coor-x) + calc(var(--coor-x) * var(--separate-gap))),
+    calc(var(--block-size) * var(--coor-y) + calc(var(--coor-y) * var(--separate-gap)))
   );
   position: relative;
-}
-
-.container__row .row__col.figure--reflex {
-  animation: sliding_reflection 0.7s linear infinite;
 }
 
 .container .figure__created {
   background-color: red;
   position: absolute;
   margin: var(--separate-padding);
+  transition: transform 0.2s;
 }
 
 .row__col .cell__ocupied {
@@ -73,6 +71,10 @@
   position: absolute;
   inset: 2px;
   background-color: var(--secondary-color);
+}
+
+.container__row .row__col.figure--reflex {
+  animation: sliding_reflection 0.7s linear infinite;
 }
 
 @keyframes sliding_reflection {

@@ -5,20 +5,25 @@ globalThis.self.addEventListener("error", () => {
 });
 
 self.addEventListener("fetch", (event) => {
-  console.log(event.request);
+  const url = new URL(event.request.url);
+
+  // Ignorar WebSockets y HMR de Vite
+  if (url.protocol === "ws:" || url.protocol === "wss:") return;
+
+  // Ignorar requests de Vite (HMR)
+  if (url.pathname.includes("/@vite") || url.pathname.includes("/__vite")) return;
+
   event.respondWith(
     (async () => {
-      // Abre la cache y busca el request si es que esta
       const cache = await caches.open(cacheName);
       const cached = await cache.match(event.request);
 
-      if (cached) return cached; // Si esta lo devuelve
+      if (cached) return cached;
 
-      // Si no lo cachea y lo devuelve
-      const responce = await fetch(event.request);
-      cache.put(event.request, responce.clone());
+      const response = await fetch(event.request);
+      cache.put(event.request, response.clone());
 
-      return responce;
+      return response;
     })(),
   );
 });

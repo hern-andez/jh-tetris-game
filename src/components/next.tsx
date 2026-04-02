@@ -1,6 +1,6 @@
-import gamecss from "./styles/game.module.css";
+import gamecss from "@pages/styles/game.module.css";
 
-function Next({ nextFigure }: { nextFigure: (null | 1 | 2)[][] }) {
+function Next({ nextFigure }: { nextFigure: (null | 1)[][] }) {
   return (
     <div className={gamecss.child__container} style={{ gridArea: "next" }}>
       <div className={gamecss.container__next}>

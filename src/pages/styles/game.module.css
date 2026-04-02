@@ -2,6 +2,7 @@
 
 body {
   background-image: radial-gradient(#012b54, #000);
+  background-image: radial-gradient(rgb(1, 43, 84), #000);
 }
 
 .game {
@@ -12,21 +13,21 @@ body {
 }
 
 .game .game__container {
-  --separate-items: 15px;
+  --gap-col: 15px;
   margin: 0px 20px;
   display: grid;
   grid-template-areas: "points grid next" "btn btn btn";
   grid-template-columns: auto 1fr auto;
   grid-template-rows: 1fr auto;
-  gap: var(--separate-items);
+  gap: 8dvh var(--gap-col);
 }
 
-/* Fin de interfaz de juego */
+/* Inicio de componentes de puntos y siguiente figura */
 
 .game__container .child__container {
   background-color: var(--third-color);
   height: fit-content;
-  width: clamp(45px, 14dvw, 80px);
+  width: clamp(55px, 14dvw, 100px);
   border: 1px solid var(--third-color);
   border-radius: 10px;
   overflow: hidden;
@@ -39,7 +40,7 @@ body {
 .child__container .container__next {
   background-color: var(--secondary-color);
   color: #eee;
-  padding: 3px 0px;
+  padding: 0.7dvh 0px;
   display: grid;
   justify-items: center;
   align-items: center;
@@ -51,7 +52,7 @@ body {
 
 .container__score .score__title,
 .container__next .next__title {
-  font-size: clamp(9px, 3dvw, 11px);
+  font-size: clamp(9px, 2dvh, 16px);
 }
 
 .container__next.value {
@@ -64,3 +65,5 @@ body {
   aspect-ratio: 1/1;
   border: 2px solid var(--third-color);
 }
+
+/* Fin de interfaz de juego */
